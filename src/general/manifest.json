@@ -1,0 +1,65 @@
+{
+  "manifest_version": 2,
+  "name": "alarms-test",
+  "version": "1.0",
+  "description": "Test all alarms APIs",
+  "author": "Sebastian Huber",
+
+  "icons": {
+    "48": "icons/extension-icon-48.png"
+  },
+
+  "page_action": {
+    "browser_style": true,
+    "default_icon": {
+      "16": "icons/extension-icon-48.png",
+      "32": "icons/extension-icon-48.png"
+    },
+    "default_title": "A generic browser action",
+    "default_popup": "popup.html"
+  },
+
+  "omnibox": {
+    "keyword": "ext"
+  },
+
+  "sidebar_action": {
+    "browser_style": true,
+    "default_icon": {
+      "16": "icons/extension-icon-48.png",
+      "32": "icons/extension-icon-48.png"
+    },
+    "default_title": "A generic browser action",
+    "default_popup": "popup.html",
+    "default_panel": "popup.html"
+  },
+
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
+
+  "permissions": [
+    "alarms",
+    "tabs",
+    "bookmarks",
+    "browsingData",
+    "contextMenus",
+    "contextualIdentities",
+    "downloads",
+    "history",
+    "identity",
+    "idle",
+    "management",
+    "notifications",
+    "sessions",
+    "storage",
+    "activeTab",
+    "topSites",
+    "webNavigation",
+    "webRequest"
+  ],
+
+  "background": {
+    "page": "index.html",
+    "persistent": true
+  }
+
+}

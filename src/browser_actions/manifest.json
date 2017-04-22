@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "alarms-test",
+  "version": "1.0",
+  "description": "Test all alarms APIs",
+  "author": "Sebastian Huber",
+
+  "icons": {
+    "48": "icons/extension-icon-48.png"
+  },
+
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": {
+      "16": "icons/extension-icon-48.png",
+      "32": "icons/extension-icon-48.png"
+    },
+    "default_title": "A generic browser action",
+    "default_popup": "popup.html"
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "background": {
+    "page": "index.html",
+    "persistent": true
+  }
+
+}

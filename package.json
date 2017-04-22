@@ -1,0 +1,32 @@
+{
+  "name": "webextensions-testframework",
+  "version": "1.0.0",
+  "description": "testframework for browserextensions",
+  "main": "alarms.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Godfather27/webextensions-test.git"
+  },
+  "keywords": [
+    "webextensions",
+    "add-on",
+    "test-framework"
+  ],
+  "author": "Sebastian Huber",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Godfather27/webextensions-test/issues"
+  },
+  "homepage": "https://github.com/Godfather27/webextensions-test#readme",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-clean": "^1.1.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0"
+  }
+}
