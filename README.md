@@ -24,6 +24,9 @@ __add Extension to browser__
 
 the built versions are in the `build` folder
 
+`browser_actions` holds only tests for browserActions
+`general` holds all APIs except for browserActions (because chrome doesn't allow browserActions and pageActions at the same time)
+
 - [chrome](https://developer.chrome.com/extensions/getstarted#unpacked)
 - [firefox](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Debugging#The_Add-on_Debugger)
 - [opera](https://dev.opera.com/extensions/testing/#developer-mode)
