@@ -33,17 +33,6 @@ module.exports = function(grunt) {
         },
       },
     },
-
-    // concat: {
-    //   actions: {
-    //     src: ['src/browser_actions/browser-polyfill.js', 'src/browser_actions/index.js'],
-    //     dest: 'build/browser_actions/index.js',
-    //   },
-    //   general: {
-    //     src: ['src/general/browser-polyfill.js', 'src/general/index.js'],
-    //     dest: 'build/general/index.js',
-    //   }
-    // }
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');

@@ -10,7 +10,6 @@
   },
 
   "browser_action": {
-    "browser_style": true,
     "default_icon": {
       "16": "icons/extension-icon-48.png",
       "32": "icons/extension-icon-48.png"

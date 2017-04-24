@@ -10,7 +10,6 @@
   },
 
   "page_action": {
-    "browser_style": true,
     "default_icon": {
       "16": "icons/extension-icon-48.png",
       "32": "icons/extension-icon-48.png"
@@ -23,8 +22,17 @@
     "keyword": "ext"
   },
 
+  "commands": {
+    "toggle-feature-foo": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle feature foo"
+    }
+  },
+
   "sidebar_action": {
-    "browser_style": true,
     "default_icon": {
       "16": "icons/extension-icon-48.png",
       "32": "icons/extension-icon-48.png"
@@ -42,6 +50,7 @@
     "bookmarks",
     "browsingData",
     "contextMenus",
+    "cookies",
     "contextualIdentities",
     "downloads",
     "history",

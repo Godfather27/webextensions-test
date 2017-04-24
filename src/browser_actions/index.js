@@ -1,12 +1,16 @@
-let browser = require('./browser-polyfill.js')
+var vendor = require('detect-browser')
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs=>{
+if(vendor.name === "chrome" || vendor.name === "opera"){
+  browser = chrome
+}
+
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
   if(browser.runtime.getURL("/index.html")!==tabs[0].url){
     browser.tabs.create({url: browser.runtime.getURL("./index.html")})
   }
 })
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs=>{
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
   if(browser.runtime.getURL("/index.html")===tabs[0].url){
     tests();
   }
@@ -15,7 +19,6 @@ browser.tabs.query({active: true, currentWindow: true}).then(tabs=>{
 let table = document.getElementById('data');
 let appendElement = ({api, value})=> {
   let tr = document.createElement('tr');
-  tr.setAttribute('id', api);
   table.appendChild(tr)
   let td = document.createElement('td');
   tr.appendChild(td);
@@ -60,14 +63,6 @@ let tests = () =>{
   appendElement({ api: "browser.browserAction.getBadgeBackgroundColor", value: (supported && browser.browserAction.getBadgeBackgroundColor!==undefined)});
   appendElement({ api: "browser.browserAction.enable", value: (supported && browser.browserAction.enable!==undefined)});
   appendElement({ api: "browser.browserAction.disable", value: (supported && browser.browserAction.disable!==undefined)});
-
-  console.log('browserAction.onClicked')
-  if(supported && browser.browserAction.onClicked!==undefined){
-    appendElement({ api: "browser.browserAction.onClicked.addListener", value: (supported && browser.browserAction.onClicked.addListener!==undefined)});
-    appendElement({ api: "browser.browserAction.onClicked.removeListener", value: (supported && browser.browserAction.onClicked.removeListener!==undefined)});
-    appendElement({ api: "browser.browserAction.onClicked.hasListener", value: (supported && browser.browserAction.onClicked.hasListener!==undefined)});
-  } else {
-    console.log('browserAction.onClicked undefined')
-  }
+  appendElement({ api: "browser.browserAction.onClicked", value: (supported && browser.browserAction.onClicked!==undefined)});
   console.log('browserAction done')
 }

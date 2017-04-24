@@ -1,12 +1,16 @@
-let browser = require('./browser-polyfill.js')
+var vendor = require('detect-browser')
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs=>{
+if(vendor.name === "chrome" || vendor.name === "opera"){
+  browser = chrome
+}
+
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
   if(browser.runtime.getURL("/index.html")!==tabs[0].url){
     browser.tabs.create({url: browser.runtime.getURL("./index.html")})
   }
 })
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs=>{
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
   if(browser.runtime.getURL("/index.html")===tabs[0].url){
     tests();
   }
@@ -29,9 +33,28 @@ let appendElement = ({api, value})=> {
   }
 }
 
+let appendAsync = ({api, value})=>{
+  let firstRow = document.getElementById(api.split('.')[1])
+  let tr = document.createElement('tr');
+  tr.setAttribute('class', 'callback')
+  firstRow.parentNode.insertBefore(tr, firstRow.nextSibling.nextSibling);
+  let td = document.createElement('td');
+  tr.appendChild(td);
+  td.innerHTML = api;
+  td = document.createElement('td');
+  td.setAttribute('class', value)
+  tr.appendChild(td);
+  if(value){
+    td.innerHTML = "supported";
+  } else {
+    td.innerHTML = "not supported"
+  }
+}
+
 let appendHeading = (api)=>{
   // API KEY - Headline
   let tr = document.createElement('tr');
+  tr.setAttribute('id', api)
   table.appendChild(tr)
   let th = document.createElement('th');
   th.setAttribute('colspan', 2);
@@ -46,18 +69,29 @@ let appendHeading = (api)=>{
   th.innerHTML = "API"
   th = document.createElement('th');
   tr.appendChild(th)
-  th.innerHTML = "native"
+  th.innerHTML = vendor.name
 }
 
 let tests = ()=>{
   let supported;
+
+  function callback({api, supported}) {
+    console.error(api, supported)
+    if(api==="browser.extension.lastError"){
+      appendAsync({api, value:(supported && browser.extension.lastError!==undefined)});
+      console.error('foo')
+    } else if(api==="browser.runtime.lastError"){
+      appendAsync({api, value:(supported && browser.runtime.lastError!==undefined)});
+      console.error('bar')
+    }
+  }
 
 /**
  * Alarms API
  */
   console.log('alarms start')
   supported = browser.alarms!==undefined;
-  appendHeading('Alarms')
+  appendHeading('alarms')
 
   console.log('alarms functions')
   appendElement({ api: "browser.alarms.create", value: (supported && browser.alarms.create!==undefined)})
@@ -66,15 +100,6 @@ let tests = ()=>{
   appendElement({ api: "browser.alarms.clear", value: (supported && browser.alarms.clear!==undefined)});
   appendElement({ api: "browser.alarms.clearAll", value: (supported && browser.alarms.clearAll!==undefined)});
   appendElement({ api: "browser.alarms.onAlarm", value: (supported && browser.alarms.onAlarm!==undefined)});
-
-  console.log('alarms.onAlarm')
-  if(supported && browser.alarms.onAlarm!==undefined){
-    appendElement({ api: "browser.alarms.onAlarm.addListener", value: (supported && browser.alarms.onAlarm.addListener!==undefined)});
-    appendElement({ api: "browser.alarms.onAlarm.removeListener", value: (supported && browser.alarms.onAlarm.removeListener!==undefined)});
-    appendElement({ api: "browser.alarms.onAlarm.hasListener", value: (supported && browser.alarms.onAlarm.hasListener!==undefined)});
-  } else {
-    console.log('alarms.onAlarm undefined')
-  }
   console.log('alarms done')
 
   /**
@@ -82,7 +107,7 @@ let tests = ()=>{
    */
   console.log('bookmarks start')
   supported = browser.bookmarks!==undefined
-  appendHeading('Bookmarks')
+  appendHeading('bookmarks')
   
   console.log('bookmarks functions')
   appendElement({ api: "browser.bookmarks.create", value: (supported && browser.bookmarks.create!==undefined)});
@@ -96,63 +121,13 @@ let tests = ()=>{
   appendElement({ api: "browser.bookmarks.removeTree", value: (supported && browser.bookmarks.removeTree!==undefined)});
   appendElement({ api: "browser.bookmarks.search", value: (supported && browser.bookmarks.search!==undefined)});
   appendElement({ api: "browser.bookmarks.update", value: (supported && browser.bookmarks.update!==undefined)});
-
-  console.log('bookmarks.onCreated')
-  if(supported && browser.bookmarks.onCreated!==undefined){
-    appendElement({ api: "browser.bookmarks.onCreated.addListener", value: (supported && browser.bookmarks.onCreated.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onCreated.removeListener", value: (supported && browser.bookmarks.onCreated.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onCreated.hasListener", value: (supported && browser.bookmarks.onCreated.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onCreated undefined')
-  }
-  console.log('bookmarks.onRemoved')
-  if(supported && browser.bookmarks.onRemoved!==undefined){
-    appendElement({ api: "browser.bookmarks.onRemoved.addListener", value: (supported && browser.bookmarks.onRemoved.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onRemoved.removeListener", value: (supported && browser.bookmarks.onRemoved.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onRemoved.hasListener", value: (supported && browser.bookmarks.onRemoved.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onRemoved undefined')
-  }
-  console.log('bookmarks.onChanged')
-  if(supported && browser.bookmarks.onChanged!==undefined){
-    appendElement({ api: "browser.bookmarks.onChanged.addListener", value: (supported && browser.bookmarks.onChanged.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onChanged.removeListener", value: (supported && browser.bookmarks.onChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onChanged.hasListener", value: (supported && browser.bookmarks.onChanged.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onChanged undefined')
-  }
-  console.log('bookmarks.onMoved')
-  if(supported && browser.bookmarks.onMoved!==undefined){
-    appendElement({ api: "browser.bookmarks.onMoved.addListener", value: (supported && browser.bookmarks.onMoved.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onMoved.removeListener", value: (supported && browser.bookmarks.onMoved.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onMoved.hasListener", value: (supported && browser.bookmarks.onMoved.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onMoved undefined')
-  }
-  console.log('bookmarks.onChildrenReordered')
-  if(supported && browser.bookmarks.onChildrenReordered!==undefined){
-    appendElement({ api: "browser.bookmarks.onChildrenReordered.addListener", value: (supported && browser.bookmarks.onChildrenReordered.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onChildrenReordered.removeListener", value: (supported && browser.bookmarks.onChildrenReordered.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onChildrenReordered.hasListener", value: (supported && browser.bookmarks.onChildrenReordered.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onChildrenReordered undefined')
-  }
-  console.log('bookmarks.onImportBegan')
-  if(supported && browser.bookmarks.onImportBegan!==undefined){
-    appendElement({ api: "browser.bookmarks.onImportBegan.addListener", value: (supported && browser.bookmarks.onImportBegan.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onImportBegan.removeListener", value: (supported && browser.bookmarks.onImportBegan.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onImportBegan.hasListener", value: (supported && browser.bookmarks.onImportBegan.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onImportBegan undefined')
-  }
-  console.log('bookmarks.onImportEnded')
-  if(supported && browser.bookmarks.onImportEnded!==undefined){
-    appendElement({ api: "browser.bookmarks.onImportEnded.addListener", value: (supported && browser.bookmarks.onImportEnded.addListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onImportEnded.removeListener", value: (supported && browser.bookmarks.onImportEnded.removeListener!==undefined)});
-    appendElement({ api: "browser.bookmarks.onImportEnded.hasListener", value: (supported && browser.bookmarks.onImportEnded.hasListener!==undefined)});
-  } else {
-    console.log('bookmarks.onImportEnded undefined')
-  }
+  appendElement({ api: "browser.bookmarks.onCreated", value: (supported && browser.bookmarks.onCreated!==undefined)});
+  appendElement({ api: "browser.bookmarks.onRemoved", value: (supported && browser.bookmarks.onRemoved!==undefined)});
+  appendElement({ api: "browser.bookmarks.onChanged", value: (supported && browser.bookmarks.onChanged!==undefined)});
+  appendElement({ api: "browser.bookmarks.onMoved", value: (supported && browser.bookmarks.onMoved!==undefined)});
+  appendElement({ api: "browser.bookmarks.onChildrenReordered", value: (supported && browser.bookmarks.onChildrenReordered!==undefined)});
+  appendElement({ api: "browser.bookmarks.onImportBegan", value: (supported && browser.bookmarks.onImportBegan!==undefined)});
+  appendElement({ api: "browser.bookmarks.onImportEnded", value: (supported && browser.bookmarks.onImportEnded!==undefined)});
   console.log('bookmarks done')
 
   /**
@@ -160,7 +135,7 @@ let tests = ()=>{
    */
   console.log('browsingData start')
   supported = browser.browsingData!==undefined
-  appendHeading('BrowsingData')
+  appendHeading('browsingData')
   
   console.log('browsingData functions')
   
@@ -180,20 +155,10 @@ let tests = ()=>{
    */
   console.log('commands start')
   supported = browser.commands!==undefined
-  appendHeading('Commands')
+  appendHeading('commands')
 
-  console.log('commands functions')
-  
   appendElement({ api: "browser.commands.getAll", value: (supported && browser.commands.getAll!==undefined)});
-
-  console.log('commands.onCommand')
-  if(supported && browser.commands.onCommand!==undefined){
-    appendElement({ api: "browser.commands.onCommand.addListener", value: (supported && browser.commands.onCommand.addListener!==undefined)});
-    appendElement({ api: "browser.commands.onCommand.removeListener", value: (supported && browser.commands.onCommand.removeListener!==undefined)});
-    appendElement({ api: "browser.commands.onCommand.hasListener", value: (supported && browser.commands.onCommand.hasListener!==undefined)});
-  } else {
-    console.log('commands.onCommand undefined')
-  }
+  appendElement({ api: "browser.commands.onCommand", value: (supported && browser.commands.onCommand!==undefined)});
   console.log('commands done')
 
   /**
@@ -201,7 +166,7 @@ let tests = ()=>{
    */
   console.log('contextMenus start')
   supported = browser.contextMenus!==undefined
-  appendHeading('ContextMenus')
+  appendHeading('contextMenus')
 
   console.log('contextMenus properties')
   appendElement({ api: "browser.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT", value: (supported && browser.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT!==undefined)});
@@ -212,15 +177,7 @@ let tests = ()=>{
   appendElement({ api: "browser.contextMenus.update", value: (supported && browser.contextMenus.update!==undefined)});
   appendElement({ api: "browser.contextMenus.remove", value: (supported && browser.contextMenus.remove!==undefined)});
   appendElement({ api: "browser.contextMenus.removeAll", value: (supported && browser.contextMenus.removeAll!==undefined)});
-
-  console.log('contextMenus.onClicked')
-  if(supported && browser.contextMenus.onClicked!==undefined){
-    appendElement({ api: "browser.contextMenus.onClicked.addListener", value: (supported && browser.contextMenus.onClicked.addListener!==undefined)});
-    appendElement({ api: "browser.contextMenus.onClicked.removeListener", value: (supported && browser.contextMenus.onClicked.removeListener!==undefined)});
-    appendElement({ api: "browser.contextMenus.onClicked.hasListener", value: (supported && browser.contextMenus.onClicked.hasListener!==undefined)});
-  } else {
-    console.log('contextMenus.onClicked undefined')
-  }
+  appendElement({ api: "browser.contextMenus.onClicked", value: (supported && browser.contextMenus.onClicked!==undefined)});
   console.log('contextMenus done')
 
   /**
@@ -228,7 +185,7 @@ let tests = ()=>{
    */
   console.log('contextualIdentities start')
   supported = browser.contextualIdentities!==undefined
-  appendHeading('ContextualIdentities')
+  appendHeading('contextualIdentities')
 
   console.log('contextualIdentities functions')
   
@@ -244,7 +201,7 @@ let tests = ()=>{
    */
   console.log('cookies start')
   supported = browser.cookies!==undefined
-  appendHeading('Cookies')
+  appendHeading('cookies')
 
   console.log('cookies functions')
   
@@ -253,15 +210,7 @@ let tests = ()=>{
   appendElement({ api: "browser.cookies.set", value: (supported && browser.cookies.set!==undefined)});
   appendElement({ api: "browser.cookies.remove", value: (supported && browser.cookies.remove!==undefined)});
   appendElement({ api: "browser.cookies.getAllCookieStores", value: (supported && browser.cookies.getAllCookieStores!==undefined)});
-
-  console.log('cookies.onChanged')
-  if(supported && browser.cookies.onChanged!==undefined){
-    appendElement({ api: "browser.cookies.onChanged.addListener", value: (supported && browser.cookies.onChanged.addListener!==undefined)});
-    appendElement({ api: "browser.cookies.onChanged.removeListener", value: (supported && browser.cookies.onChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.cookies.onChanged.hasListener", value: (supported && browser.cookies.onChanged.hasListener!==undefined)});
-  } else {
-    console.log('cookies.onChanged undefined')
-  }
+  appendElement({ api: "browser.cookies.onChanged", value: (supported && browser.cookies.onChanged!==undefined)});
   console.log('cookies done')
 
   /**
@@ -269,7 +218,7 @@ let tests = ()=>{
    */
   console.log('downloads start')
   supported = browser.downloads!==undefined
-  appendHeading('Downloads')
+  appendHeading('downloads')
 
   console.log('downloads functions')
   
@@ -287,33 +236,9 @@ let tests = ()=>{
   appendElement({ api: "browser.downloads.acceptDanger", value: (supported && browser.downloads.acceptDanger!==undefined)});
   appendElement({ api: "browser.downloads.drag", value: (supported && browser.downloads.drag!==undefined)});
   appendElement({ api: "browser.downloads.setShelfEnabled", value: (supported && browser.downloads.setShelfEnabled!==undefined)});
-
-  console.log('downloads.onCreated')
-  if(supported && browser.downloads.onCreated!==undefined){
-    appendElement({ api: "browser.downloads.onCreated.addListener", value: (supported && browser.downloads.onCreated.addListener!==undefined)});
-    appendElement({ api: "browser.downloads.onCreated.removeListener", value: (supported && browser.downloads.onCreated.removeListener!==undefined)});
-    appendElement({ api: "browser.downloads.onCreated.hasListener", value: (supported && browser.downloads.onCreated.hasListener!==undefined)});
-  } else {
-    console.log('downloads.onCreated undefined')
-  }
-
-  console.log('downloads.onErased')
-  if(supported && browser.downloads.onErased!==undefined){
-    appendElement({ api: "browser.downloads.onErased.addListener", value: (supported && browser.downloads.onErased.addListener!==undefined)});
-    appendElement({ api: "browser.downloads.onErased.removeListener", value: (supported && browser.downloads.onErased.removeListener!==undefined)});
-    appendElement({ api: "browser.downloads.onErased.hasListener", value: (supported && browser.downloads.onErased.hasListener!==undefined)});
-  } else {
-    console.log('downloads.onErased undefined')
-  }
-
-  console.log('downloads.onChanged')
-  if(supported && browser.downloads.onChanged!==undefined){
-    appendElement({ api: "browser.downloads.onChanged.addListener", value: (supported && browser.downloads.onChanged.addListener!==undefined)});
-    appendElement({ api: "browser.downloads.onChanged.removeListener", value: (supported && browser.downloads.onChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.downloads.onChanged.hasListener", value: (supported && browser.downloads.onChanged.hasListener!==undefined)});
-  } else {
-    console.log('downloads.onChanged undefined')
-  }
+  appendElement({ api: "browser.downloads.onCreated", value: (supported && browser.downloads.onCreated!==undefined)});
+  appendElement({ api: "browser.downloads.onErased", value: (supported && browser.downloads.onErased!==undefined)});
+  appendElement({ api: "browser.downloads.onChanged", value: (supported && browser.downloads.onChanged!==undefined)});
   console.log('downloads done')
 
   /**
@@ -326,10 +251,10 @@ let tests = ()=>{
    */
   console.log('extension start')
   supported = browser.extension!==undefined
-  appendHeading('Extension')
+  appendHeading('extension')
 
   console.log('extension properties')
-  appendElement({ api: "browser.extension.lastError", value: (supported && browser.extension.lastError!==undefined)});
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.extension.lastError", supported}))
   appendElement({ api: "browser.extension.inIncognitoContext", value: (supported && browser.extension.inIncognitoContext!==undefined)});
   
   console.log('extension functions')
@@ -339,24 +264,8 @@ let tests = ()=>{
   appendElement({ api: "browser.extension.isAllowedIncognitoAccess", value: (supported && browser.extension.isAllowedIncognitoAccess!==undefined)});
   appendElement({ api: "browser.extension.isAllowedFileSchemeAccess", value: (supported && browser.extension.isAllowedFileSchemeAccess!==undefined)});
   appendElement({ api: "browser.extension.setUpdateUrlData", value: (supported && browser.extension.setUpdateUrlData!==undefined)});
-
-  console.log('extension.onRequest')
-  if(supported && browser.extension.onRequest!==undefined){
-    appendElement({ api: "browser.extension.onRequest.addListener", value: (supported && browser.extension.onRequest.addListener!==undefined)});
-    appendElement({ api: "browser.extension.onRequest.removeListener", value: (supported && browser.extension.onRequest.removeListener!==undefined)});
-    appendElement({ api: "browser.extension.onRequest.hasListener", value: (supported && browser.extension.onRequest.hasListener!==undefined)});
-  } else {
-    console.log('extension.onRequest undefined')
-  }
-
-  console.log('extension.onRequestExternal')
-  if(supported && browser.extension.onRequestExternal!==undefined){
-    appendElement({ api: "browser.extension.onRequestExternal.addListener", value: (supported && browser.extension.onRequestExternal.addListener!==undefined)});
-    appendElement({ api: "browser.extension.onRequestExternal.removeListener", value: (supported && browser.extension.onRequestExternal.removeListener!==undefined)});
-    appendElement({ api: "browser.extension.onRequestExternal.hasListener", value: (supported && browser.extension.onRequestExternal.hasListener!==undefined)});
-  } else {
-    console.log('extension.onRequestExternal undefined')
-  }
+  appendElement({ api: "browser.extension.onRequest", value: (supported && browser.extension.onRequest!==undefined)});
+  appendElement({ api: "browser.extension.onRequestExternal", value: (supported && browser.extension.onRequestExternal!==undefined)});
   console.log('extension done')
 
   /**
@@ -369,7 +278,7 @@ let tests = ()=>{
    */
   console.log('history start')
   supported = browser.history!==undefined
-  appendHeading('History')
+  appendHeading('history')
 
   console.log('history functions')
   
@@ -379,24 +288,8 @@ let tests = ()=>{
   appendElement({ api: "browser.history.deleteUrl", value: (supported && browser.history.deleteUrl!==undefined)});
   appendElement({ api: "browser.history.deleteRange", value: (supported && browser.history.deleteRange!==undefined)});
   appendElement({ api: "browser.history.deleteAll", value: (supported && browser.history.deleteAll!==undefined)});
-
-  console.log('history.onVisited')
-  if(supported && browser.history.onVisited!==undefined){
-    appendElement({ api: "browser.history.onVisited.addListener", value: (supported && browser.history.onVisited.addListener!==undefined)});
-    appendElement({ api: "browser.history.onVisited.removeListener", value: (supported && browser.history.onVisited.removeListener!==undefined)});
-    appendElement({ api: "browser.history.onVisited.hasListener", value: (supported && browser.history.onVisited.hasListener!==undefined)});
-  } else {
-    console.log('history.onVisited undefined')
-  }
-
-  console.log('history.onVisitRemoved')
-  if(supported && browser.history.onVisitRemoved!==undefined){
-    appendElement({ api: "browser.history.onVisitRemoved.addListener", value: (supported && browser.history.onVisitRemoved.addListener!==undefined)});
-    appendElement({ api: "browser.history.onVisitRemoved.removeListener", value: (supported && browser.history.onVisitRemoved.removeListener!==undefined)});
-    appendElement({ api: "browser.history.onVisitRemoved.hasListener", value: (supported && browser.history.onVisitRemoved.hasListener!==undefined)});
-  } else {
-    console.log('history.onVisitRemoved undefined')
-  }
+  appendElement({ api: "browser.history.onVisited", value: (supported && browser.history.onVisited!==undefined)});
+  appendElement({ api: "browser.history.onVisitRemoved", value: (supported && browser.history.onVisitRemoved!==undefined)});
   console.log('history done')
 
   /**
@@ -404,7 +297,7 @@ let tests = ()=>{
    */
   console.log('i18n start')
   supported = browser.i18n!==undefined
-  appendHeading('I18n')
+  appendHeading('i18n')
 
   console.log('i18n functions')
   
@@ -419,7 +312,7 @@ let tests = ()=>{
    */
   console.log('identity start')
   supported = browser.identity!==undefined
-  appendHeading('Identity')
+  appendHeading('identity')
 
   console.log('identity functions')
   
@@ -432,21 +325,13 @@ let tests = ()=>{
    */
   console.log('idle start')
   supported = browser.idle!==undefined
-  appendHeading('Idle')
+  appendHeading('idle')
 
   console.log('idle functions')
   
   appendElement({ api: "browser.idle.queryState", value: (supported && browser.idle.queryState!==undefined)});
   appendElement({ api: "browser.idle.setDetectionInterval", value: (supported && browser.idle.setDetectionInterval!==undefined)});
-
-  console.log('idle.onStateChanged')
-  if(supported && browser.idle.onStateChanged!==undefined){
-    appendElement({ api: "browser.idle.onStateChanged.addListener", value: (supported && browser.idle.onStateChanged.addListener!==undefined)});
-    appendElement({ api: "browser.idle.onStateChanged.removeListener", value: (supported && browser.idle.onStateChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.idle.onStateChanged.hasListener", value: (supported && browser.idle.onStateChanged.hasListener!==undefined)});
-  } else {
-    console.log('idle.onStateChanged undefined')
-  }
+  appendElement({ api: "browser.idle.onStateChanged", value: (supported && browser.idle.onStateChanged!==undefined)});
   console.log('idle done')
 
   /**
@@ -454,7 +339,7 @@ let tests = ()=>{
    */
   console.log('management start')
   supported = browser.management!==undefined
-  appendHeading('Management')
+  appendHeading('management')
 
   console.log('management functions')
   
@@ -466,42 +351,10 @@ let tests = ()=>{
   appendElement({ api: "browser.management.getPermissionWarningsById", value: (supported && browser.management.getPermissionWarningsById!==undefined)});
   appendElement({ api: "browser.management.getPermissionWarningsByManifest", value: (supported && browser.management.getPermissionWarningsByManifest!==undefined)});
   appendElement({ api: "browser.management.setEnabled", value: (supported && browser.management.setEnabled!==undefined)});
-
-  console.log('management.onInstalled')
-  if(supported && browser.management.onInstalled!==undefined){
-    appendElement({ api: "browser.management.onInstalled.addListener", value: (supported && browser.management.onInstalled.addListener!==undefined)});
-    appendElement({ api: "browser.management.onInstalled.removeListener", value: (supported && browser.management.onInstalled.removeListener!==undefined)});
-    appendElement({ api: "browser.management.onInstalled.hasListener", value: (supported && browser.management.onInstalled.hasListener!==undefined)});
-  } else {
-    console.log('management.onInstalled undefined')
-  }
-
-  console.log('management.onUninstalled')
-  if(supported && browser.management.onUninstalled!==undefined){
-    appendElement({ api: "browser.management.onUninstalled.addListener", value: (supported && browser.management.onUninstalled.addListener!==undefined)});
-    appendElement({ api: "browser.management.onUninstalled.removeListener", value: (supported && browser.management.onUninstalled.removeListener!==undefined)});
-    appendElement({ api: "browser.management.onUninstalled.hasListener", value: (supported && browser.management.onUninstalled.hasListener!==undefined)});
-  } else {
-    console.log('management.onUninstalled undefined')
-  }
-
-  console.log('management.onEnabled')
-  if(supported && browser.management.onEnabled!==undefined){
-    appendElement({ api: "browser.management.onEnabled.addListener", value: (supported && browser.management.onEnabled.addListener!==undefined)});
-    appendElement({ api: "browser.management.onEnabled.removeListener", value: (supported && browser.management.onEnabled.removeListener!==undefined)});
-    appendElement({ api: "browser.management.onEnabled.hasListener", value: (supported && browser.management.onEnabled.hasListener!==undefined)});
-  } else {
-    console.log('management.onEnabled undefined')
-  }
-
-  console.log('management.onDisabled')
-  if(supported && browser.management.onDisabled!==undefined){
-    appendElement({ api: "browser.management.onDisabled.addListener", value: (supported && browser.management.onDisabled.addListener!==undefined)});
-    appendElement({ api: "browser.management.onDisabled.removeListener", value: (supported && browser.management.onDisabled.removeListener!==undefined)});
-    appendElement({ api: "browser.management.onDisabled.hasListener", value: (supported && browser.management.onDisabled.hasListener!==undefined)});
-  } else {
-    console.log('management.onDisabled undefined')
-  }
+  appendElement({ api: "browser.management.onInstalled", value: (supported && browser.management.onInstalled!==undefined)});
+  appendElement({ api: "browser.management.onUninstalled", value: (supported && browser.management.onUninstalled!==undefined)});
+  appendElement({ api: "browser.management.onEnabled", value: (supported && browser.management.onEnabled!==undefined)});
+  appendElement({ api: "browser.management.onDisabled", value: (supported && browser.management.onDisabled!==undefined)});
   console.log('management done')
 
   /**
@@ -509,7 +362,7 @@ let tests = ()=>{
    */
   console.log('notifications start')
   supported = browser.notifications!==undefined
-  appendHeading('Notifications')
+  appendHeading('notifications')
 
   console.log('notifications functions')
   
@@ -517,33 +370,9 @@ let tests = ()=>{
   appendElement({ api: "browser.notifications.update", value: (supported && browser.notifications.update!==undefined)});
   appendElement({ api: "browser.notifications.clear", value: (supported && browser.notifications.clear!==undefined)});
   appendElement({ api: "browser.notifications.getAll", value: (supported && browser.notifications.getAll!==undefined)});
-
-  console.log('notifications.onClosed')
-  if(supported && browser.notifications.onClosed!==undefined){
-    appendElement({ api: "browser.notifications.onClosed.addListener", value: (supported && browser.notifications.onClosed.addListener!==undefined)});
-    appendElement({ api: "browser.notifications.onClosed.removeListener", value: (supported && browser.notifications.onClosed.removeListener!==undefined)});
-    appendElement({ api: "browser.notifications.onClosed.hasListener", value: (supported && browser.notifications.onClosed.hasListener!==undefined)});
-  } else {
-    console.log('notifications.onClosed undefined')
-  }
-
-  console.log('notifications.onClicked')
-  if(supported && browser.notifications.onClicked!==undefined){
-    appendElement({ api: "browser.notifications.onClicked.addListener", value: (supported && browser.notifications.onClicked.addListener!==undefined)});
-    appendElement({ api: "browser.notifications.onClicked.removeListener", value: (supported && browser.notifications.onClicked.removeListener!==undefined)});
-    appendElement({ api: "browser.notifications.onClicked.hasListener", value: (supported && browser.notifications.onClicked.hasListener!==undefined)});
-  } else {
-    console.log('notifications.onClicked undefined')
-  }
-
-  console.log('notifications.onButtonClicked')
-  if(supported && browser.notifications.onButtonClicked!==undefined){
-    appendElement({ api: "browser.notifications.onButtonClicked.addListener", value: (supported && browser.notifications.onButtonClicked.addListener!==undefined)});
-    appendElement({ api: "browser.notifications.onButtonClicked.removeListener", value: (supported && browser.notifications.onButtonClicked.removeListener!==undefined)});
-    appendElement({ api: "browser.notifications.onButtonClicked.hasListener", value: (supported && browser.notifications.onButtonClicked.hasListener!==undefined)});
-  } else {
-    console.log('notifications.onButtonClicked undefined')
-  }
+  appendElement({ api: "browser.notifications.onClosed", value: (supported && browser.notifications.onClosed!==undefined)});
+  appendElement({ api: "browser.notifications.onClicked", value: (supported && browser.notifications.onClicked!==undefined)});
+  appendElement({ api: "browser.notifications.onButtonClicked", value: (supported && browser.notifications.onButtonClicked!==undefined)});
   console.log('notifications done')
 
   /**
@@ -551,47 +380,15 @@ let tests = ()=>{
    */
   console.log('omnibox start')
   supported = browser.omnibox!==undefined
-  appendHeading('Omnibox')
+  appendHeading('omnibox')
 
   console.log('omnibox functions')
   
   appendElement({ api: "browser.omnibox.setDefaultSuggestion", value: (supported && browser.omnibox.setDefaultSuggestion!==undefined)});
-
-  console.log('omnibox.onInputStarted')
-  if(supported && browser.omnibox.onInputStarted!==undefined){
-    appendElement({ api: "browser.omnibox.onInputStarted.addListener", value: (supported && browser.omnibox.onInputStarted.addListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputStarted.removeListener", value: (supported && browser.omnibox.onInputStarted.removeListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputStarted.hasListener", value: (supported && browser.omnibox.onInputStarted.hasListener!==undefined)});
-  } else {
-    console.log('omnibox.onInputStarted undefined')
-  }
-
-  console.log('omnibox.onInputChanged')
-  if(supported && browser.omnibox.onInputChanged!==undefined){
-    appendElement({ api: "browser.omnibox.onInputChanged.addListener", value: (supported && browser.omnibox.onInputChanged.addListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputChanged.removeListener", value: (supported && browser.omnibox.onInputChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputChanged.hasListener", value: (supported && browser.omnibox.onInputChanged.hasListener!==undefined)});
-  } else {
-    console.log('omnibox.onInputChanged undefined')
-  }
-
-  console.log('omnibox.onInputEntered')
-  if(supported && browser.omnibox.onInputEntered!==undefined){
-    appendElement({ api: "browser.omnibox.onInputEntered.addListener", value: (supported && browser.omnibox.onInputEntered.addListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputEntered.removeListener", value: (supported && browser.omnibox.onInputEntered.removeListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputEntered.hasListener", value: (supported && browser.omnibox.onInputEntered.hasListener!==undefined)});
-  } else {
-    console.log('omnibox.onInputEntered undefined')
-  }
-
-  console.log('omnibox.onInputCancelled')
-  if(supported && browser.omnibox.onInputCancelled!==undefined){
-    appendElement({ api: "browser.omnibox.onInputCancelled.addListener", value: (supported && browser.omnibox.onInputCancelled.addListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputCancelled.removeListener", value: (supported && browser.omnibox.onInputCancelled.removeListener!==undefined)});
-    appendElement({ api: "browser.omnibox.onInputCancelled.hasListener", value: (supported && browser.omnibox.onInputCancelled.hasListener!==undefined)});
-  } else {
-    console.log('omnibox.onInputCancelled undefined')
-  }
+  appendElement({ api: "browser.omnibox.onInputStarted", value: (supported && browser.omnibox.onInputStarted!==undefined)});
+  appendElement({ api: "browser.omnibox.onInputChanged", value: (supported && browser.omnibox.onInputChanged!==undefined)});
+  appendElement({ api: "browser.omnibox.onInputEntered", value: (supported && browser.omnibox.onInputEntered!==undefined)});
+  appendElement({ api: "browser.omnibox.onInputCancelled", value: (supported && browser.omnibox.onInputCancelled!==undefined)});
   console.log('omnibox done')
 
   /**
@@ -599,7 +396,7 @@ let tests = ()=>{
    */
   console.log('pageAction start')
   supported = browser.pageAction!==undefined
-  appendHeading('PageAction')
+  appendHeading('pageAction')
 
   console.log('pageAction functions')
   
@@ -610,38 +407,18 @@ let tests = ()=>{
   appendElement({ api: "browser.pageAction.setIcon", value: (supported && browser.pageAction.setIcon!==undefined)});
   appendElement({ api: "browser.pageAction.setPopup", value: (supported && browser.pageAction.setPopup!==undefined)});
   appendElement({ api: "browser.pageAction.getPopup", value: (supported && browser.pageAction.getPopup!==undefined)});
-
-  console.log('pageAction.onClicked')
-  if(supported && browser.pageAction.onClicked!==undefined){
-    appendElement({ api: "browser.pageAction.onClicked.addListener", value: (supported && browser.pageAction.onClicked.addListener!==undefined)});
-    appendElement({ api: "browser.pageAction.onClicked.removeListener", value: (supported && browser.pageAction.onClicked.removeListener!==undefined)});
-    appendElement({ api: "browser.pageAction.onClicked.hasListener", value: (supported && browser.pageAction.onClicked.hasListener!==undefined)});
-  } else {
-    console.log('pageAction.onClicked undefined')
-  }
+  appendElement({ api: "browser.pageAction.onClicked", value: (supported && browser.pageAction.onClicked!==undefined)});
   console.log('pageAction done')
-
-  /**
-   * privacy
-   */
-  console.log('privacy start')
-  supported = browser.privacy!==undefined
-  appendHeading('Privacy')
-
-  console.log('privacy properties')
-  appendElement({ api: "browser.privacy.network", value: (supported && browser.privacy.network!==undefined)});
-  appendElement({ api: "browser.privacy.websites", value: (supported && browser.privacy.websites!==undefined)});
-  console.log('privacy done')
 
   /**
    * runtime
    */
   console.log('runtime start')
   supported = browser.runtime!==undefined
-  appendHeading('Runtime')
+  appendHeading('runtime')
 
   console.log('runtime properties')
-  appendElement({ api: "browser.runtime.lastError", value: (supported && browser.runtime.lastError!==undefined)});
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.runtime.lastError", supported}))
   appendElement({ api: "browser.runtime.id", value: (supported && browser.runtime.id!==undefined)});
   
   console.log('runtime functions')
@@ -658,105 +435,17 @@ let tests = ()=>{
   appendElement({ api: "browser.runtime.getPlatformInfo", value: (supported && browser.runtime.getPlatformInfo!==undefined)});
   appendElement({ api: "browser.runtime.getBrowserInfo", value: (supported && browser.runtime.getBrowserInfo!==undefined)});
   appendElement({ api: "browser.runtime.getPackageDirectoryEntry", value: (supported && browser.runtime.getPackageDirectoryEntry!==undefined)});
-
-  console.log('runtime.onStartup')
-  if(supported && browser.runtime.onStartup!==undefined){
-    appendElement({ api: "browser.runtime.onStartup.addListener", value: (supported && browser.runtime.onStartup.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onStartup.removeListener", value: (supported && browser.runtime.onStartup.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onStartup.hasListener", value: (supported && browser.runtime.onStartup.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onStartup undefined')
-  }
-
-  console.log('runtime.onInstalled')
-  if(supported && browser.runtime.onInstalled!==undefined){
-    appendElement({ api: "browser.runtime.onInstalled.addListener", value: (supported && browser.runtime.onInstalled.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onInstalled.removeListener", value: (supported && browser.runtime.onInstalled.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onInstalled.hasListener", value: (supported && browser.runtime.onInstalled.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onInstalled undefined')
-  }
-
-  console.log('runtime.onSuspend')
-  if(supported && browser.runtime.onSuspend!==undefined){
-    appendElement({ api: "browser.runtime.onSuspend.addListener", value: (supported && browser.runtime.onSuspend.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onSuspend.removeListener", value: (supported && browser.runtime.onSuspend.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onSuspend.hasListener", value: (supported && browser.runtime.onSuspend.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onSuspend undefined')
-  }
-
-  console.log('runtime.onSuspendCanceled')
-  if(supported && browser.runtime.onSuspendCanceled!==undefined){
-    appendElement({ api: "browser.runtime.onSuspendCanceled.addListener", value: (supported && browser.runtime.onSuspendCanceled.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onSuspendCanceled.removeListener", value: (supported && browser.runtime.onSuspendCanceled.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onSuspendCanceled.hasListener", value: (supported && browser.runtime.onSuspendCanceled.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onSuspendCanceled undefined')
-  }
-
-  console.log('runtime.onUpdateAvailable')
-  if(supported && browser.runtime.onUpdateAvailable!==undefined){
-    appendElement({ api: "browser.runtime.onUpdateAvailable.addListener", value: (supported && browser.runtime.onUpdateAvailable.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onUpdateAvailable.removeListener", value: (supported && browser.runtime.onUpdateAvailable.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onUpdateAvailable.hasListener", value: (supported && browser.runtime.onUpdateAvailable.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onUpdateAvailable undefined')
-  }
-
-  console.log('runtime.onBrowserUpdateAvailable')
-  if(supported && browser.runtime.onBrowserUpdateAvailable!==undefined){
-    appendElement({ api: "browser.runtime.onBrowserUpdateAvailable.addListener", value: (supported && browser.runtime.onBrowserUpdateAvailable.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onBrowserUpdateAvailable.removeListener", value: (supported && browser.runtime.onBrowserUpdateAvailable.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onBrowserUpdateAvailable.hasListener", value: (supported && browser.runtime.onBrowserUpdateAvailable.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onBrowserUpdateAvailable undefined')
-  }
-
-  console.log('runtime.onConnect')
-  if(supported && browser.runtime.onConnect!==undefined){
-    appendElement({ api: "browser.runtime.onConnect.addListener", value: (supported && browser.runtime.onConnect.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onConnect.removeListener", value: (supported && browser.runtime.onConnect.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onConnect.hasListener", value: (supported && browser.runtime.onConnect.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onConnect undefined')
-  }
-
-  console.log('runtime.onConnectExternal')
-  if(supported && browser.runtime.onConnectExternal!==undefined){
-    appendElement({ api: "browser.runtime.onConnectExternal.addListener", value: (supported && browser.runtime.onConnectExternal.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onConnectExternal.removeListener", value: (supported && browser.runtime.onConnectExternal.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onConnectExternal.hasListener", value: (supported && browser.runtime.onConnectExternal.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onConnectExternal undefined')
-  }
-
-  console.log('runtime.onMessage')
-  if(supported && browser.runtime.onMessage!==undefined){
-    appendElement({ api: "browser.runtime.onMessage.addListener", value: (supported && browser.runtime.onMessage.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onMessage.removeListener", value: (supported && browser.runtime.onMessage.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onMessage.hasListener", value: (supported && browser.runtime.onMessage.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onMessage undefined')
-  }
-
-  console.log('runtime.onMessageExternal')
-  if(supported && browser.runtime.onMessageExternal!==undefined){
-    appendElement({ api: "browser.runtime.onMessageExternal.addListener", value: (supported && browser.runtime.onMessageExternal.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onMessageExternal.removeListener", value: (supported && browser.runtime.onMessageExternal.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onMessageExternal.hasListener", value: (supported && browser.runtime.onMessageExternal.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onMessageExternal undefined')
-  }
-
-  console.log('runtime.onRestartRequired')
-  if(supported && browser.runtime.onRestartRequired!==undefined){
-    appendElement({ api: "browser.runtime.onRestartRequired.addListener", value: (supported && browser.runtime.onRestartRequired.addListener!==undefined)});
-    appendElement({ api: "browser.runtime.onRestartRequired.removeListener", value: (supported && browser.runtime.onRestartRequired.removeListener!==undefined)});
-    appendElement({ api: "browser.runtime.onRestartRequired.hasListener", value: (supported && browser.runtime.onRestartRequired.hasListener!==undefined)});
-  } else {
-    console.log('runtime.onRestartRequired undefined')
-  }
+  appendElement({ api: "browser.runtime.onStartup", value: (supported && browser.runtime.onStartup!==undefined)});
+  appendElement({ api: "browser.runtime.onInstalled", value: (supported && browser.runtime.onInstalled!==undefined)});
+  appendElement({ api: "browser.runtime.onSuspend", value: (supported && browser.runtime.onSuspend!==undefined)});
+  appendElement({ api: "browser.runtime.onSuspendCanceled", value: (supported && browser.runtime.onSuspendCanceled!==undefined)});
+  appendElement({ api: "browser.runtime.onUpdateAvailable", value: (supported && browser.runtime.onUpdateAvailable!==undefined)});
+  appendElement({ api: "browser.runtime.onBrowserUpdateAvailable", value: (supported && browser.runtime.onBrowserUpdateAvailable!==undefined)});
+  appendElement({ api: "browser.runtime.onConnect", value: (supported && browser.runtime.onConnect!==undefined)});
+  appendElement({ api: "browser.runtime.onConnectExternal", value: (supported && browser.runtime.onConnectExternal!==undefined)});
+  appendElement({ api: "browser.runtime.onMessage", value: (supported && browser.runtime.onMessage!==undefined)});
+  appendElement({ api: "browser.runtime.onMessageExternal", value: (supported && browser.runtime.onMessageExternal!==undefined)});
+  appendElement({ api: "browser.runtime.onRestartRequired", value: (supported && browser.runtime.onRestartRequired!==undefined)});
   console.log('runtime done')
 
   /**
@@ -764,7 +453,7 @@ let tests = ()=>{
    */
   console.log('sessions start')
   supported = browser.sessions!==undefined
-  appendHeading('Sessions')
+  appendHeading('sessions')
 
   console.log('sessions properties')
   appendElement({ api: "browser.sessions.MAX_SESSION_RESULTS", value: (supported && browser.sessions.MAX_SESSION_RESULTS!==undefined)});
@@ -772,15 +461,7 @@ let tests = ()=>{
   console.log('sessions functions')
   appendElement({ api: "browser.sessions.getRecentlyClosed", value: (supported && browser.sessions.getRecentlyClosed!==undefined)});
   appendElement({ api: "browser.sessions.restore", value: (supported && browser.sessions.restore!==undefined)});
-
-  console.log('sessions.onChanged')
-  if(supported && browser.sessions.onChanged!==undefined){
-    appendElement({ api: "browser.sessions.onChanged.addListener", value: (supported && browser.sessions.onChanged.addListener!==undefined)});
-    appendElement({ api: "browser.sessions.onChanged.removeListener", value: (supported && browser.sessions.onChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.sessions.onChanged.hasListener", value: (supported && browser.sessions.onChanged.hasListener!==undefined)});
-  } else {
-    console.log('sessions.onChanged undefined')
-  }
+  appendElement({ api: "browser.sessions.onChanged", value: (supported && browser.sessions.onChanged!==undefined)});
   console.log('sessions done')
 
   /**
@@ -788,7 +469,7 @@ let tests = ()=>{
    */
   console.log('sidebarAction start')
   supported = browser.sidebarAction!==undefined
-  appendHeading('SidebarAction')
+  appendHeading('sidebarAction')
 
   console.log('sidebarAction functions')
   appendElement({ api: "browser.sidebarAction.setPanel", value: (supported && browser.sidebarAction.setPanel!==undefined)});
@@ -803,21 +484,13 @@ let tests = ()=>{
    */
   console.log('storage start')
   supported = browser.storage!==undefined
-  appendHeading('Storage')
+  appendHeading('storage')
 
   console.log('storage properties')
   appendElement({ api: "browser.storage.sync", value: (supported && browser.storage.sync!==undefined)});
   appendElement({ api: "browser.storage.local", value: (supported && browser.storage.local!==undefined)});
   appendElement({ api: "browser.storage.managed", value: (supported && browser.storage.managed!==undefined)});
-
-  console.log('storage.onChanged')
-  if(supported && browser.storage.onChanged!==undefined){
-    appendElement({ api: "browser.storage.onChanged.addListener", value: (supported && browser.storage.onChanged.addListener!==undefined)});
-    appendElement({ api: "browser.storage.onChanged.removeListener", value: (supported && browser.storage.onChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.storage.onChanged.hasListener", value: (supported && browser.storage.onChanged.hasListener!==undefined)});
-  } else {
-    console.log('storage.onChanged undefined')
-  }
+  appendElement({ api: "browser.storage.onChanged", value: (supported && browser.storage.onChanged!==undefined)});
   console.log('storage done')
 
   /**
@@ -825,7 +498,7 @@ let tests = ()=>{
    */
   console.log('tabs start')
   supported = browser.tabs!==undefined
-  appendHeading('Tabs')
+  appendHeading('tabs')
 
   console.log('tabs properties')
   appendElement({ api: "browser.tabs.TAB_ID_NONE", value: (supported && browser.tabs.TAB_ID_NONE!==undefined)});
@@ -855,123 +528,19 @@ let tests = ()=>{
   appendElement({ api: "browser.tabs.setZoom", value: (supported && browser.tabs.setZoom!==undefined)});
   appendElement({ api: "browser.tabs.setZoomSettings", value: (supported && browser.tabs.setZoomSettings!==undefined)});
   appendElement({ api: "browser.tabs.update", value: (supported && browser.tabs.update!==undefined)});
-
-  console.log('tabs.onActivated')
-  if(supported && browser.tabs.onActivated!==undefined){
-    appendElement({ api: "browser.tabs.onActivated.addListener", value: (supported && browser.tabs.onActivated.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onActivated.removeListener", value: (supported && browser.tabs.onActivated.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onActivated.hasListener", value: (supported && browser.tabs.onActivated.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onActivated undefined')
-  }
-
-  console.log('tabs.onActiveChanged')
-  if(supported && browser.tabs.onActiveChanged!==undefined){
-    appendElement({ api: "browser.tabs.onActiveChanged.addListener", value: (supported && browser.tabs.onActiveChanged.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onActiveChanged.removeListener", value: (supported && browser.tabs.onActiveChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onActiveChanged.hasListener", value: (supported && browser.tabs.onActiveChanged.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onActiveChanged undefined')
-  }
-
-  console.log('tabs.onAttached')
-  if(supported && browser.tabs.onAttached!==undefined){
-    appendElement({ api: "browser.tabs.onAttached.addListener", value: (supported && browser.tabs.onAttached.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onAttached.removeListener", value: (supported && browser.tabs.onAttached.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onAttached.hasListener", value: (supported && browser.tabs.onAttached.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onAttached undefined')
-  }
-
-  console.log('tabs.onCreated')
-  if(supported && browser.tabs.onCreated!==undefined){
-    appendElement({ api: "browser.tabs.onCreated.addListener", value: (supported && browser.tabs.onCreated.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onCreated.removeListener", value: (supported && browser.tabs.onCreated.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onCreated.hasListener", value: (supported && browser.tabs.onCreated.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onCreated undefined')
-  }
-
-  console.log('tabs.onDetached')
-  if(supported && browser.tabs.onDetached!==undefined){
-    appendElement({ api: "browser.tabs.onDetached.addListener", value: (supported && browser.tabs.onDetached.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onDetached.removeListener", value: (supported && browser.tabs.onDetached.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onDetached.hasListener", value: (supported && browser.tabs.onDetached.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onDetached undefined')
-  }
-
-  console.log('tabs.onHighlightChanged')
-  if(supported && browser.tabs.onHighlightChanged!==undefined){
-    appendElement({ api: "browser.tabs.onHighlightChanged.addListener", value: (supported && browser.tabs.onHighlightChanged.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onHighlightChanged.removeListener", value: (supported && browser.tabs.onHighlightChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onHighlightChanged.hasListener", value: (supported && browser.tabs.onHighlightChanged.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onHighlightChanged undefined')
-  }
-
-  console.log('tabs.onHighlighted')
-  if(supported && browser.tabs.onHighlighted!==undefined){
-    appendElement({ api: "browser.tabs.onHighlighted.addListener", value: (supported && browser.tabs.onHighlighted.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onHighlighted.removeListener", value: (supported && browser.tabs.onHighlighted.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onHighlighted.hasListener", value: (supported && browser.tabs.onHighlighted.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onHighlighted undefined')
-  }
-
-  console.log('tabs.onMoved')
-  if(supported && browser.tabs.onMoved!==undefined){
-    appendElement({ api: "browser.tabs.onMoved.addListener", value: (supported && browser.tabs.onMoved.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onMoved.removeListener", value: (supported && browser.tabs.onMoved.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onMoved.hasListener", value: (supported && browser.tabs.onMoved.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onMoved undefined')
-  }
-
-  console.log('tabs.onRemoved')
-  if(supported && browser.tabs.onRemoved!==undefined){
-    appendElement({ api: "browser.tabs.onRemoved.addListener", value: (supported && browser.tabs.onRemoved.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onRemoved.removeListener", value: (supported && browser.tabs.onRemoved.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onRemoved.hasListener", value: (supported && browser.tabs.onRemoved.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onRemoved undefined')
-  }
-
-  console.log('tabs.onReplaced')
-  if(supported && browser.tabs.onReplaced!==undefined){
-    appendElement({ api: "browser.tabs.onReplaced.addListener", value: (supported && browser.tabs.onReplaced.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onReplaced.removeListener", value: (supported && browser.tabs.onReplaced.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onReplaced.hasListener", value: (supported && browser.tabs.onReplaced.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onReplaced undefined')
-  }
-
-  console.log('tabs.onSelectionChanged')
-  if(supported && browser.tabs.onSelectionChanged!==undefined){
-    appendElement({ api: "browser.tabs.onSelectionChanged.addListener", value: (supported && browser.tabs.onSelectionChanged.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onSelectionChanged.removeListener", value: (supported && browser.tabs.onSelectionChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onSelectionChanged.hasListener", value: (supported && browser.tabs.onSelectionChanged.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onSelectionChanged undefined')
-  }
-
-  console.log('tabs.onUpdated')
-  if(supported && browser.tabs.onUpdated!==undefined){
-    appendElement({ api: "browser.tabs.onUpdated.addListener", value: (supported && browser.tabs.onUpdated.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onUpdated.removeListener", value: (supported && browser.tabs.onUpdated.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onUpdated.hasListener", value: (supported && browser.tabs.onUpdated.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onUpdated undefined')
-  }
-
-  console.log('tabs.onZoomChange')
-  if(supported && browser.tabs.onZoomChange!==undefined){
-    appendElement({ api: "browser.tabs.onZoomChange.addListener", value: (supported && browser.tabs.onZoomChange.addListener!==undefined)});
-    appendElement({ api: "browser.tabs.onZoomChange.removeListener", value: (supported && browser.tabs.onZoomChange.removeListener!==undefined)});
-    appendElement({ api: "browser.tabs.onZoomChange.hasListener", value: (supported && browser.tabs.onZoomChange.hasListener!==undefined)});
-  } else {
-    console.log('tabs.onZoomChange undefined')
-  }
+  appendElement({ api: "browser.tabs.onActivated", value: (supported && browser.tabs.onActivated!==undefined)});
+  appendElement({ api: "browser.tabs.onActiveChanged", value: (supported && browser.tabs.onActiveChanged!==undefined)});
+  appendElement({ api: "browser.tabs.onAttached", value: (supported && browser.tabs.onAttached!==undefined)});
+  appendElement({ api: "browser.tabs.onCreated", value: (supported && browser.tabs.onCreated!==undefined)});
+  appendElement({ api: "browser.tabs.onDetached", value: (supported && browser.tabs.onDetached!==undefined)});
+  appendElement({ api: "browser.tabs.onHighlightChanged", value: (supported && browser.tabs.onHighlightChanged!==undefined)});
+  appendElement({ api: "browser.tabs.onHighlighted", value: (supported && browser.tabs.onHighlighted!==undefined)});
+  appendElement({ api: "browser.tabs.onMoved", value: (supported && browser.tabs.onMoved!==undefined)});
+  appendElement({ api: "browser.tabs.onRemoved", value: (supported && browser.tabs.onRemoved!==undefined)});
+  appendElement({ api: "browser.tabs.onReplaced", value: (supported && browser.tabs.onReplaced!==undefined)});
+  appendElement({ api: "browser.tabs.onSelectionChanged", value: (supported && browser.tabs.onSelectionChanged!==undefined)});
+  appendElement({ api: "browser.tabs.onUpdated", value: (supported && browser.tabs.onUpdated!==undefined)});
+  appendElement({ api: "browser.tabs.onZoomChange", value: (supported && browser.tabs.onZoomChange!==undefined)});
   console.log('tabs done')
 
   /**
@@ -979,7 +548,7 @@ let tests = ()=>{
    */
   console.log('topSites start')
   supported = browser.topSites!==undefined
-  appendHeading('TopSites')
+  appendHeading('topSites')
 
   console.log('topSites functions')
   appendElement({ api: "browser.topSites.get", value: (supported && browser.topSites.get!==undefined)});
@@ -990,92 +559,20 @@ let tests = ()=>{
    */
   console.log('webNavigation start')
   supported = browser.webNavigation!==undefined
-  appendHeading('WebNavigation')
+  appendHeading('webNavigation')
 
   console.log('tabs functions')
   appendElement({ api: "browser.webNavigation.getFrame", value: (supported && browser.webNavigation.getFrame!==undefined)});
   appendElement({ api: "browser.webNavigation.getAllFrames", value: (supported && browser.webNavigation.getAllFrames!==undefined)});
-
-  console.log('webNavigation.onBeforeNavigate')
-  if(supported && browser.webNavigation.onBeforeNavigate!==undefined){
-    appendElement({ api: "browser.webNavigation.onBeforeNavigate.addListener", value: (supported && browser.webNavigation.onBeforeNavigate.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onBeforeNavigate.removeListener", value: (supported && browser.webNavigation.onBeforeNavigate.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onBeforeNavigate.hasListener", value: (supported && browser.webNavigation.onBeforeNavigate.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onBeforeNavigate undefined')
-  }
-
-  console.log('webNavigation.onCommitted')
-  if(supported && browser.webNavigation.onCommitted!==undefined){
-    appendElement({ api: "browser.webNavigation.onCommitted.addListener", value: (supported && browser.webNavigation.onCommitted.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCommitted.removeListener", value: (supported && browser.webNavigation.onCommitted.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCommitted.hasListener", value: (supported && browser.webNavigation.onCommitted.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onCommitted undefined')
-  }
-
-  console.log('webNavigation.onDOMContentLoaded')
-  if(supported && browser.webNavigation.onDOMContentLoaded!==undefined){
-    appendElement({ api: "browser.webNavigation.onDOMContentLoaded.addListener", value: (supported && browser.webNavigation.onDOMContentLoaded.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onDOMContentLoaded.removeListener", value: (supported && browser.webNavigation.onDOMContentLoaded.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onDOMContentLoaded.hasListener", value: (supported && browser.webNavigation.onDOMContentLoaded.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onDOMContentLoaded undefined')
-  }
-
-  console.log('webNavigation.onCompleted')
-  if(supported && browser.webNavigation.onCompleted!==undefined){
-    appendElement({ api: "browser.webNavigation.onCompleted.addListener", value: (supported && browser.webNavigation.onCompleted.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCompleted.removeListener", value: (supported && browser.webNavigation.onCompleted.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCompleted.hasListener", value: (supported && browser.webNavigation.onCompleted.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onCompleted undefined')
-  }
-
-  console.log('webNavigation.onErrorOccurred')
-  if(supported && browser.webNavigation.onErrorOccurred!==undefined){
-    appendElement({ api: "browser.webNavigation.onErrorOccurred.addListener", value: (supported && browser.webNavigation.onErrorOccurred.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onErrorOccurred.removeListener", value: (supported && browser.webNavigation.onErrorOccurred.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onErrorOccurred.hasListener", value: (supported && browser.webNavigation.onErrorOccurred.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onErrorOccurred undefined')
-  }
-
-  console.log('webNavigation.onCreatedNavigationTarget')
-  if(supported && browser.webNavigation.onCreatedNavigationTarget!==undefined){
-    appendElement({ api: "browser.webNavigation.onCreatedNavigationTarget.addListener", value: (supported && browser.webNavigation.onCreatedNavigationTarget.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCreatedNavigationTarget.removeListener", value: (supported && browser.webNavigation.onCreatedNavigationTarget.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onCreatedNavigationTarget.hasListener", value: (supported && browser.webNavigation.onCreatedNavigationTarget.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onCreatedNavigationTarget undefined')
-  }
-
-  console.log('webNavigation.onReferenceFragmentUpdated')
-  if(supported && browser.webNavigation.onReferenceFragmentUpdated!==undefined){
-    appendElement({ api: "browser.webNavigation.onReferenceFragmentUpdated.addListener", value: (supported && browser.webNavigation.onReferenceFragmentUpdated.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onReferenceFragmentUpdated.removeListener", value: (supported && browser.webNavigation.onReferenceFragmentUpdated.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onReferenceFragmentUpdated.hasListener", value: (supported && browser.webNavigation.onReferenceFragmentUpdated.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onReferenceFragmentUpdated undefined')
-  }
-
-  console.log('webNavigation.onTabReplaced')
-  if(supported && browser.webNavigation.onTabReplaced!==undefined){
-    appendElement({ api: "browser.webNavigation.onTabReplaced.addListener", value: (supported && browser.webNavigation.onTabReplaced.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onTabReplaced.removeListener", value: (supported && browser.webNavigation.onTabReplaced.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onTabReplaced.hasListener", value: (supported && browser.webNavigation.onTabReplaced.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onTabReplaced undefined')
-  }
-
-  console.log('webNavigation.onHistoryStateUpdated')
-  if(supported && browser.webNavigation.onHistoryStateUpdated!==undefined){
-    appendElement({ api: "browser.webNavigation.onHistoryStateUpdated.addListener", value: (supported && browser.webNavigation.onHistoryStateUpdated.addListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onHistoryStateUpdated.removeListener", value: (supported && browser.webNavigation.onHistoryStateUpdated.removeListener!==undefined)});
-    appendElement({ api: "browser.webNavigation.onHistoryStateUpdated.hasListener", value: (supported && browser.webNavigation.onHistoryStateUpdated.hasListener!==undefined)});
-  } else {
-    console.log('webNavigation.onHistoryStateUpdated undefined')
-  }
+  appendElement({ api: "browser.webNavigation.onBeforeNavigate", value: (supported && browser.webNavigation.onBeforeNavigate!==undefined)});
+  appendElement({ api: "browser.webNavigation.onCommitted", value: (supported && browser.webNavigation.onCommitted!==undefined)});
+  appendElement({ api: "browser.webNavigation.onDOMContentLoaded", value: (supported && browser.webNavigation.onDOMContentLoaded!==undefined)});
+  appendElement({ api: "browser.webNavigation.onCompleted", value: (supported && browser.webNavigation.onCompleted!==undefined)});
+  appendElement({ api: "browser.webNavigation.onErrorOccurred", value: (supported && browser.webNavigation.onErrorOccurred!==undefined)});
+  appendElement({ api: "browser.webNavigation.onCreatedNavigationTarget", value: (supported && browser.webNavigation.onCreatedNavigationTarget!==undefined)});
+  appendElement({ api: "browser.webNavigation.onReferenceFragmentUpdated", value: (supported && browser.webNavigation.onReferenceFragmentUpdated!==undefined)});
+  appendElement({ api: "browser.webNavigation.onTabReplaced", value: (supported && browser.webNavigation.onTabReplaced!==undefined)});
+  appendElement({ api: "browser.webNavigation.onHistoryStateUpdated", value: (supported && browser.webNavigation.onHistoryStateUpdated!==undefined)});
   console.log('webNavigation done')
 
   /**
@@ -1083,94 +580,22 @@ let tests = ()=>{
    */
   console.log('webRequest start')
   supported = browser.webRequest!==undefined
-  appendHeading('WebRequest')
+  appendHeading('webRequest')
 
   console.log('webRequest properties')
   appendElement({ api: "browser.webRequest.MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES", value: (supported && browser.webRequest.MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES!==undefined)});
   
   console.log('webRequest functions')
   appendElement({ api: "browser.webRequest.handlerBehaviorChanged", value: (supported && browser.webRequest.handlerBehaviorChanged!==undefined)});
-
-  console.log('webRequest.onBeforeRequest')
-  if(supported && browser.webRequest.onBeforeRequest!==undefined){
-    appendElement({ api: "browser.webRequest.onBeforeRequest.addListener", value: (supported && browser.webRequest.onBeforeRequest.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeRequest.removeListener", value: (supported && browser.webRequest.onBeforeRequest.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeRequest.hasListener", value: (supported && browser.webRequest.onBeforeRequest.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onBeforeRequest undefined')
-  }
-
-  console.log('webRequest.onBeforeSendHeaders')
-  if(supported && browser.webRequest.onBeforeSendHeaders!==undefined){
-    appendElement({ api: "browser.webRequest.onBeforeSendHeaders.addListener", value: (supported && browser.webRequest.onBeforeSendHeaders.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeSendHeaders.removeListener", value: (supported && browser.webRequest.onBeforeSendHeaders.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeSendHeaders.hasListener", value: (supported && browser.webRequest.onBeforeSendHeaders.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onBeforeSendHeaders undefined')
-  }
-
-  console.log('webRequest.onSendHeaders')
-  if(supported && browser.webRequest.onSendHeaders!==undefined){
-    appendElement({ api: "browser.webRequest.onSendHeaders.addListener", value: (supported && browser.webRequest.onSendHeaders.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onSendHeaders.removeListener", value: (supported && browser.webRequest.onSendHeaders.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onSendHeaders.hasListener", value: (supported && browser.webRequest.onSendHeaders.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onSendHeaders undefined')
-  }
-
-  console.log('webRequest.onHeadersReceived')
-  if(supported && browser.webRequest.onHeadersReceived!==undefined){
-    appendElement({ api: "browser.webRequest.onHeadersReceived.addListener", value: (supported && browser.webRequest.onHeadersReceived.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onHeadersReceived.removeListener", value: (supported && browser.webRequest.onHeadersReceived.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onHeadersReceived.hasListener", value: (supported && browser.webRequest.onHeadersReceived.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onHeadersReceived undefined')
-  }
-
-  console.log('webRequest.onAuthRequired')
-  if(supported && browser.webRequest.onAuthRequired!==undefined){
-    appendElement({ api: "browser.webRequest.onAuthRequired.addListener", value: (supported && browser.webRequest.onAuthRequired.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onAuthRequired.removeListener", value: (supported && browser.webRequest.onAuthRequired.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onAuthRequired.hasListener", value: (supported && browser.webRequest.onAuthRequired.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onAuthRequired undefined')
-  }
-
-  console.log('webRequest.onResponseStarted')
-  if(supported && browser.webRequest.onResponseStarted!==undefined){
-    appendElement({ api: "browser.webRequest.onResponseStarted.addListener", value: (supported && browser.webRequest.onResponseStarted.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onResponseStarted.removeListener", value: (supported && browser.webRequest.onResponseStarted.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onResponseStarted.hasListener", value: (supported && browser.webRequest.onResponseStarted.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onResponseStarted undefined')
-  }
-
-  console.log('webRequest.onBeforeRedirect')
-  if(supported && browser.webRequest.onBeforeRedirect!==undefined){
-    appendElement({ api: "browser.webRequest.onBeforeRedirect.addListener", value: (supported && browser.webRequest.onBeforeRedirect.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeRedirect.removeListener", value: (supported && browser.webRequest.onBeforeRedirect.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onBeforeRedirect.hasListener", value: (supported && browser.webRequest.onBeforeRedirect.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onBeforeRedirect undefined')
-  }
-
-  console.log('webRequest.onCompleted')
-  if(supported && browser.webRequest.onCompleted!==undefined){
-    appendElement({ api: "browser.webRequest.onCompleted.addListener", value: (supported && browser.webRequest.onCompleted.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onCompleted.removeListener", value: (supported && browser.webRequest.onCompleted.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onCompleted.hasListener", value: (supported && browser.webRequest.onCompleted.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onCompleted undefined')
-  }
-
-  console.log('webRequest.onErrorOccurred')
-  if(supported && browser.webRequest.onErrorOccurred!==undefined){
-    appendElement({ api: "browser.webRequest.onErrorOccurred.addListener", value: (supported && browser.webRequest.onErrorOccurred.addListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onErrorOccurred.removeListener", value: (supported && browser.webRequest.onErrorOccurred.removeListener!==undefined)});
-    appendElement({ api: "browser.webRequest.onErrorOccurred.hasListener", value: (supported && browser.webRequest.onErrorOccurred.hasListener!==undefined)});
-  } else {
-    console.log('webRequest.onErrorOccurred undefined')
-  }
+  appendElement({ api: "browser.webRequest.onBeforeRequest", value: (supported && browser.webRequest.onBeforeRequest!==undefined)});
+  appendElement({ api: "browser.webRequest.onBeforeSendHeaders", value: (supported && browser.webRequest.onBeforeSendHeaders!==undefined)});
+  appendElement({ api: "browser.webRequest.onSendHeaders", value: (supported && browser.webRequest.onSendHeaders!==undefined)});
+  appendElement({ api: "browser.webRequest.onHeadersReceived", value: (supported && browser.webRequest.onHeadersReceived!==undefined)});
+  appendElement({ api: "browser.webRequest.onAuthRequired", value: (supported && browser.webRequest.onAuthRequired!==undefined)});
+  appendElement({ api: "browser.webRequest.onResponseStarted", value: (supported && browser.webRequest.onResponseStarted!==undefined)});
+  appendElement({ api: "browser.webRequest.onBeforeRedirect", value: (supported && browser.webRequest.onBeforeRedirect!==undefined)});
+  appendElement({ api: "browser.webRequest.onCompleted", value: (supported && browser.webRequest.onCompleted!==undefined)});
+  appendElement({ api: "browser.webRequest.onErrorOccurred", value: (supported && browser.webRequest.onErrorOccurred!==undefined)});
   console.log('webRequest done')
 
   /**
@@ -1178,7 +603,7 @@ let tests = ()=>{
    */
   console.log('windows start')
   supported = browser.windows!==undefined
-  appendHeading('Windows')
+  appendHeading('windows')
 
   console.log('windows properties')
   appendElement({ api: "browser.windows.WINDOW_ID_NONE", value: (supported && browser.windows.WINDOW_ID_NONE!==undefined)});
@@ -1192,32 +617,13 @@ let tests = ()=>{
   appendElement({ api: "browser.windows.create", value: (supported && browser.windows.create!==undefined)});
   appendElement({ api: "browser.windows.update", value: (supported && browser.windows.update!==undefined)});
   appendElement({ api: "browser.windows.remove", value: (supported && browser.windows.remove!==undefined)});
-
-  console.log('windows.onCreated')
-  if(supported && browser.windows.onCreated!==undefined){
-    appendElement({ api: "browser.windows.onCreated.addListener", value: (supported && browser.windows.onCreated.addListener!==undefined)});
-    appendElement({ api: "browser.windows.onCreated.removeListener", value: (supported && browser.windows.onCreated.removeListener!==undefined)});
-    appendElement({ api: "browser.windows.onCreated.hasListener", value: (supported && browser.windows.onCreated.hasListener!==undefined)});
-  } else {
-    console.log('windows.onCreated undefined')
-  }
-
-  console.log('windows.onRemoved')
-  if(supported && browser.windows.onRemoved!==undefined){
-    appendElement({ api: "browser.windows.onRemoved.addListener", value: (supported && browser.windows.onRemoved.addListener!==undefined)});
-    appendElement({ api: "browser.windows.onRemoved.removeListener", value: (supported && browser.windows.onRemoved.removeListener!==undefined)});
-    appendElement({ api: "browser.windows.onRemoved.hasListener", value: (supported && browser.windows.onRemoved.hasListener!==undefined)});
-  } else {
-    console.log('windows.onRemoved undefined')
-  }
-
-  console.log('windows.onFocusChanged')
-  if(supported && browser.windows.onFocusChanged!==undefined){
-    appendElement({ api: "browser.windows.onFocusChanged.addListener", value: (supported && browser.windows.onFocusChanged.addListener!==undefined)});
-    appendElement({ api: "browser.windows.onFocusChanged.removeListener", value: (supported && browser.windows.onFocusChanged.removeListener!==undefined)});
-    appendElement({ api: "browser.windows.onFocusChanged.hasListener", value: (supported && browser.windows.onFocusChanged.hasListener!==undefined)});
-  } else {
-    console.log('windows.onFocusChanged undefined')
-  }
+  appendElement({ api: "browser.windows.onCreated", value: (supported && browser.windows.onCreated!==undefined)});
+  appendElement({ api: "browser.windows.onRemoved", value: (supported && browser.windows.onRemoved!==undefined)});
+  appendElement({ api: "browser.windows.onFocusChanged", value: (supported && browser.windows.onFocusChanged!==undefined)});
   console.log('windows done')
+
+  if(document.getElementsByClassName('callback').length < 1){
+    callback({api: "browser.extension.lastError", supported: false})
+    callback({api: "browser.runtime.lastError", supported: false})
+  }
 }
