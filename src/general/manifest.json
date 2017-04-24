@@ -57,6 +57,7 @@
     "identity",
     "idle",
     "management",
+    "nativeMessaging",
     "notifications",
     "sessions",
     "storage",

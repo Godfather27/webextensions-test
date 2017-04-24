@@ -35,6 +35,10 @@ let appendElement = ({api, value})=> {
 
 let appendAsync = ({api, value})=>{
   let firstRow = document.getElementById(api.split('.')[1])
+  if(firstRow.nextSibling.nextSibling.className==="callback"){
+    console.log('foo')
+    firstRow.nextSibling.nextElementSibling.removeChild()
+  }
   let tr = document.createElement('tr');
   tr.setAttribute('class', 'callback')
   firstRow.parentNode.insertBefore(tr, firstRow.nextSibling.nextSibling);
@@ -76,40 +80,32 @@ let tests = ()=>{
   let supported;
 
   function callback({api, supported}) {
-    console.error(api, supported)
     if(api==="browser.extension.lastError"){
       appendAsync({api, value:(supported && browser.extension.lastError!==undefined)});
-      console.error('foo')
     } else if(api==="browser.runtime.lastError"){
       appendAsync({api, value:(supported && browser.runtime.lastError!==undefined)});
-      console.error('bar')
     }
   }
 
 /**
  * Alarms API
  */
-  console.log('alarms start')
   supported = browser.alarms!==undefined;
   appendHeading('alarms')
 
-  console.log('alarms functions')
   appendElement({ api: "browser.alarms.create", value: (supported && browser.alarms.create!==undefined)})
   appendElement({ api: "browser.alarms.get", value: (supported && browser.alarms.get!==undefined)});
   appendElement({ api: "browser.alarms.getAll", value: (supported && browser.alarms.getAll!==undefined)});
   appendElement({ api: "browser.alarms.clear", value: (supported && browser.alarms.clear!==undefined)});
   appendElement({ api: "browser.alarms.clearAll", value: (supported && browser.alarms.clearAll!==undefined)});
   appendElement({ api: "browser.alarms.onAlarm", value: (supported && browser.alarms.onAlarm!==undefined)});
-  console.log('alarms done')
 
   /**
    * bookmarks
    */
-  console.log('bookmarks start')
   supported = browser.bookmarks!==undefined
   appendHeading('bookmarks')
   
-  console.log('bookmarks functions')
   appendElement({ api: "browser.bookmarks.create", value: (supported && browser.bookmarks.create!==undefined)});
   appendElement({ api: "browser.bookmarks.get", value: (supported && browser.bookmarks.get!==undefined)});
   appendElement({ api: "browser.bookmarks.getChildren", value: (supported && browser.bookmarks.getChildren!==undefined)});
@@ -128,16 +124,13 @@ let tests = ()=>{
   appendElement({ api: "browser.bookmarks.onChildrenReordered", value: (supported && browser.bookmarks.onChildrenReordered!==undefined)});
   appendElement({ api: "browser.bookmarks.onImportBegan", value: (supported && browser.bookmarks.onImportBegan!==undefined)});
   appendElement({ api: "browser.bookmarks.onImportEnded", value: (supported && browser.bookmarks.onImportEnded!==undefined)});
-  console.log('bookmarks done')
 
   /**
    * browsingData
    */
-  console.log('browsingData start')
   supported = browser.browsingData!==undefined
   appendHeading('browsingData')
   
-  console.log('browsingData functions')
   
   appendElement({ api: "browser.browsingData.remove", value: (supported && browser.browsingData.remove!==undefined)});
   appendElement({ api: "browser.browsingData.removeCache", value: (supported && browser.browsingData.removeCache!==undefined)});
@@ -148,62 +141,50 @@ let tests = ()=>{
   appendElement({ api: "browser.browsingData.removePasswords", value: (supported && browser.browsingData.removePasswords!==undefined)});
   appendElement({ api: "browser.browsingData.removePluginData", value: (supported && browser.browsingData.removePluginData!==undefined)});
   appendElement({ api: "browser.browsingData.settings", value: (supported && browser.browsingData.settings!==undefined)});
-  console.log('browsingData done')
 
   /**
    * commands
    */
-  console.log('commands start')
   supported = browser.commands!==undefined
   appendHeading('commands')
 
   appendElement({ api: "browser.commands.getAll", value: (supported && browser.commands.getAll!==undefined)});
   appendElement({ api: "browser.commands.onCommand", value: (supported && browser.commands.onCommand!==undefined)});
-  console.log('commands done')
 
   /**
    * contextMenus
    */
-  console.log('contextMenus start')
   supported = browser.contextMenus!==undefined
   appendHeading('contextMenus')
 
-  console.log('contextMenus properties')
   appendElement({ api: "browser.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT", value: (supported && browser.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT!==undefined)});
 
-  console.log('contextMenus functions')
   
   appendElement({ api: "browser.contextMenus.create", value: (supported && browser.contextMenus.create!==undefined)});
   appendElement({ api: "browser.contextMenus.update", value: (supported && browser.contextMenus.update!==undefined)});
   appendElement({ api: "browser.contextMenus.remove", value: (supported && browser.contextMenus.remove!==undefined)});
   appendElement({ api: "browser.contextMenus.removeAll", value: (supported && browser.contextMenus.removeAll!==undefined)});
   appendElement({ api: "browser.contextMenus.onClicked", value: (supported && browser.contextMenus.onClicked!==undefined)});
-  console.log('contextMenus done')
 
   /**
    * contextualIdentities
    */
-  console.log('contextualIdentities start')
   supported = browser.contextualIdentities!==undefined
   appendHeading('contextualIdentities')
 
-  console.log('contextualIdentities functions')
   
   appendElement({ api: "browser.contextualIdentities.create", value: (supported && browser.contextualIdentities.create!==undefined)});
   appendElement({ api: "browser.contextualIdentities.get", value: (supported && browser.contextualIdentities.get!==undefined)});
   appendElement({ api: "browser.contextualIdentities.query", value: (supported && browser.contextualIdentities.query!==undefined)});
   appendElement({ api: "browser.contextualIdentities.update", value: (supported && browser.contextualIdentities.update!==undefined)});
   appendElement({ api: "browser.contextualIdentities.remove", value: (supported && browser.contextualIdentities.remove!==undefined)});
-  console.log('contextualIdentities done')
 
   /**
    * cookies
    */
-  console.log('cookies start')
   supported = browser.cookies!==undefined
   appendHeading('cookies')
 
-  console.log('cookies functions')
   
   appendElement({ api: "browser.cookies.get", value: (supported && browser.cookies.get!==undefined)});
   appendElement({ api: "browser.cookies.getAll", value: (supported && browser.cookies.getAll!==undefined)});
@@ -211,16 +192,13 @@ let tests = ()=>{
   appendElement({ api: "browser.cookies.remove", value: (supported && browser.cookies.remove!==undefined)});
   appendElement({ api: "browser.cookies.getAllCookieStores", value: (supported && browser.cookies.getAllCookieStores!==undefined)});
   appendElement({ api: "browser.cookies.onChanged", value: (supported && browser.cookies.onChanged!==undefined)});
-  console.log('cookies done')
 
   /**
    * downloads
    */
-  console.log('downloads start')
   supported = browser.downloads!==undefined
   appendHeading('downloads')
 
-  console.log('downloads functions')
   
   appendElement({ api: "browser.downloads.download", value: (supported && browser.downloads.download!==undefined)});
   appendElement({ api: "browser.downloads.search", value: (supported && browser.downloads.search!==undefined)});
@@ -239,7 +217,6 @@ let tests = ()=>{
   appendElement({ api: "browser.downloads.onCreated", value: (supported && browser.downloads.onCreated!==undefined)});
   appendElement({ api: "browser.downloads.onErased", value: (supported && browser.downloads.onErased!==undefined)});
   appendElement({ api: "browser.downloads.onChanged", value: (supported && browser.downloads.onChanged!==undefined)});
-  console.log('downloads done')
 
   /**
    * events
@@ -249,15 +226,12 @@ let tests = ()=>{
   /**
    * extension
    */
-  console.log('extension start')
   supported = browser.extension!==undefined
   appendHeading('extension')
 
-  console.log('extension properties')
   browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.extension.lastError", supported}))
   appendElement({ api: "browser.extension.inIncognitoContext", value: (supported && browser.extension.inIncognitoContext!==undefined)});
   
-  console.log('extension functions')
   appendElement({ api: "browser.extension.getURL", value: (supported && browser.extension.getURL!==undefined)});
   appendElement({ api: "browser.extension.getViews", value: (supported && browser.extension.getViews!==undefined)});
   appendElement({ api: "browser.extension.getBackgroundPage", value: (supported && browser.extension.getBackgroundPage!==undefined)});
@@ -266,7 +240,6 @@ let tests = ()=>{
   appendElement({ api: "browser.extension.setUpdateUrlData", value: (supported && browser.extension.setUpdateUrlData!==undefined)});
   appendElement({ api: "browser.extension.onRequest", value: (supported && browser.extension.onRequest!==undefined)});
   appendElement({ api: "browser.extension.onRequestExternal", value: (supported && browser.extension.onRequestExternal!==undefined)});
-  console.log('extension done')
 
   /**
    * extensionTypes
@@ -276,11 +249,9 @@ let tests = ()=>{
   /**
    * history
    */
-  console.log('history start')
   supported = browser.history!==undefined
   appendHeading('history')
 
-  console.log('history functions')
   
   appendElement({ api: "browser.history.search", value: (supported && browser.history.search!==undefined)});
   appendElement({ api: "browser.history.getVisits", value: (supported && browser.history.getVisits!==undefined)});
@@ -290,58 +261,46 @@ let tests = ()=>{
   appendElement({ api: "browser.history.deleteAll", value: (supported && browser.history.deleteAll!==undefined)});
   appendElement({ api: "browser.history.onVisited", value: (supported && browser.history.onVisited!==undefined)});
   appendElement({ api: "browser.history.onVisitRemoved", value: (supported && browser.history.onVisitRemoved!==undefined)});
-  console.log('history done')
 
   /**
    * i18n
    */
-  console.log('i18n start')
   supported = browser.i18n!==undefined
   appendHeading('i18n')
 
-  console.log('i18n functions')
   
   appendElement({ api: "browser.i18n.getAcceptLanguages", value: (supported && browser.i18n.getAcceptLanguages!==undefined)});
   appendElement({ api: "browser.i18n.getMessage", value: (supported && browser.i18n.getMessage!==undefined)});
   appendElement({ api: "browser.i18n.getUILanguage", value: (supported && browser.i18n.getUILanguage!==undefined)});
   appendElement({ api: "browser.i18n.detectLanguage", value: (supported && browser.i18n.detectLanguage!==undefined)});
-  console.log('i18n done')
 
   /**
    * identity
    */
-  console.log('identity start')
   supported = browser.identity!==undefined
   appendHeading('identity')
 
-  console.log('identity functions')
   
   appendElement({ api: "browser.identity.getRedirectURL", value: (supported && browser.identity.getRedirectURL!==undefined)});
   appendElement({ api: "browser.identity.launchWebAuthFlow", value: (supported && browser.identity.launchWebAuthFlow!==undefined)});
-  console.log('identity done')
 
   /**
    * idle
    */
-  console.log('idle start')
   supported = browser.idle!==undefined
   appendHeading('idle')
 
-  console.log('idle functions')
   
   appendElement({ api: "browser.idle.queryState", value: (supported && browser.idle.queryState!==undefined)});
   appendElement({ api: "browser.idle.setDetectionInterval", value: (supported && browser.idle.setDetectionInterval!==undefined)});
   appendElement({ api: "browser.idle.onStateChanged", value: (supported && browser.idle.onStateChanged!==undefined)});
-  console.log('idle done')
 
   /**
    * management
    */
-  console.log('management start')
   supported = browser.management!==undefined
   appendHeading('management')
 
-  console.log('management functions')
   
   appendElement({ api: "browser.management.getAll", value: (supported && browser.management.getAll!==undefined)});
   appendElement({ api: "browser.management.get", value: (supported && browser.management.get!==undefined)});
@@ -355,16 +314,13 @@ let tests = ()=>{
   appendElement({ api: "browser.management.onUninstalled", value: (supported && browser.management.onUninstalled!==undefined)});
   appendElement({ api: "browser.management.onEnabled", value: (supported && browser.management.onEnabled!==undefined)});
   appendElement({ api: "browser.management.onDisabled", value: (supported && browser.management.onDisabled!==undefined)});
-  console.log('management done')
 
   /**
    * notifications
    */
-  console.log('notifications start')
   supported = browser.notifications!==undefined
   appendHeading('notifications')
 
-  console.log('notifications functions')
   
   appendElement({ api: "browser.notifications.create", value: (supported && browser.notifications.create!==undefined)});
   appendElement({ api: "browser.notifications.update", value: (supported && browser.notifications.update!==undefined)});
@@ -373,32 +329,26 @@ let tests = ()=>{
   appendElement({ api: "browser.notifications.onClosed", value: (supported && browser.notifications.onClosed!==undefined)});
   appendElement({ api: "browser.notifications.onClicked", value: (supported && browser.notifications.onClicked!==undefined)});
   appendElement({ api: "browser.notifications.onButtonClicked", value: (supported && browser.notifications.onButtonClicked!==undefined)});
-  console.log('notifications done')
 
   /**
    * omnibox
    */
-  console.log('omnibox start')
   supported = browser.omnibox!==undefined
   appendHeading('omnibox')
 
-  console.log('omnibox functions')
   
   appendElement({ api: "browser.omnibox.setDefaultSuggestion", value: (supported && browser.omnibox.setDefaultSuggestion!==undefined)});
   appendElement({ api: "browser.omnibox.onInputStarted", value: (supported && browser.omnibox.onInputStarted!==undefined)});
   appendElement({ api: "browser.omnibox.onInputChanged", value: (supported && browser.omnibox.onInputChanged!==undefined)});
   appendElement({ api: "browser.omnibox.onInputEntered", value: (supported && browser.omnibox.onInputEntered!==undefined)});
   appendElement({ api: "browser.omnibox.onInputCancelled", value: (supported && browser.omnibox.onInputCancelled!==undefined)});
-  console.log('omnibox done')
 
   /**
    * pageAction
    */
-  console.log('pageAction start')
   supported = browser.pageAction!==undefined
   appendHeading('pageAction')
 
-  console.log('pageAction functions')
   
   appendElement({ api: "browser.pageAction.show", value: (supported && browser.pageAction.show!==undefined)});
   appendElement({ api: "browser.pageAction.hide", value: (supported && browser.pageAction.hide!==undefined)});
@@ -408,20 +358,16 @@ let tests = ()=>{
   appendElement({ api: "browser.pageAction.setPopup", value: (supported && browser.pageAction.setPopup!==undefined)});
   appendElement({ api: "browser.pageAction.getPopup", value: (supported && browser.pageAction.getPopup!==undefined)});
   appendElement({ api: "browser.pageAction.onClicked", value: (supported && browser.pageAction.onClicked!==undefined)});
-  console.log('pageAction done')
 
   /**
    * runtime
    */
-  console.log('runtime start')
   supported = browser.runtime!==undefined
   appendHeading('runtime')
 
-  console.log('runtime properties')
   browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.runtime.lastError", supported}))
   appendElement({ api: "browser.runtime.id", value: (supported && browser.runtime.id!==undefined)});
   
-  console.log('runtime functions')
   appendElement({ api: "browser.runtime.getBackgroundPage", value: (supported && browser.runtime.getBackgroundPage!==undefined)});
   appendElement({ api: "browser.runtime.openOptionsPage", value: (supported && browser.runtime.openOptionsPage!==undefined)});
   appendElement({ api: "browser.runtime.getManifest", value: (supported && browser.runtime.getManifest!==undefined)});
@@ -446,64 +392,50 @@ let tests = ()=>{
   appendElement({ api: "browser.runtime.onMessage", value: (supported && browser.runtime.onMessage!==undefined)});
   appendElement({ api: "browser.runtime.onMessageExternal", value: (supported && browser.runtime.onMessageExternal!==undefined)});
   appendElement({ api: "browser.runtime.onRestartRequired", value: (supported && browser.runtime.onRestartRequired!==undefined)});
-  console.log('runtime done')
 
   /**
    * sessions
    */
-  console.log('sessions start')
   supported = browser.sessions!==undefined
   appendHeading('sessions')
 
-  console.log('sessions properties')
   appendElement({ api: "browser.sessions.MAX_SESSION_RESULTS", value: (supported && browser.sessions.MAX_SESSION_RESULTS!==undefined)});
   
-  console.log('sessions functions')
   appendElement({ api: "browser.sessions.getRecentlyClosed", value: (supported && browser.sessions.getRecentlyClosed!==undefined)});
   appendElement({ api: "browser.sessions.restore", value: (supported && browser.sessions.restore!==undefined)});
   appendElement({ api: "browser.sessions.onChanged", value: (supported && browser.sessions.onChanged!==undefined)});
-  console.log('sessions done')
 
   /**
    * sidebarAction
    */
-  console.log('sidebarAction start')
   supported = browser.sidebarAction!==undefined
   appendHeading('sidebarAction')
 
-  console.log('sidebarAction functions')
   appendElement({ api: "browser.sidebarAction.setPanel", value: (supported && browser.sidebarAction.setPanel!==undefined)});
   appendElement({ api: "browser.sidebarAction.getPanel", value: (supported && browser.sidebarAction.getPanel!==undefined)});
   appendElement({ api: "browser.sidebarAction.setTitle", value: (supported && browser.sidebarAction.setTitle!==undefined)});
   appendElement({ api: "browser.sidebarAction.getTitle", value: (supported && browser.sidebarAction.getTitle!==undefined)});
   appendElement({ api: "browser.sidebarAction.setIcon", value: (supported && browser.sidebarAction.setIcon!==undefined)});
-  console.log('sidebarAction done')
 
   /**
    * storage
    */
-  console.log('storage start')
   supported = browser.storage!==undefined
   appendHeading('storage')
 
-  console.log('storage properties')
   appendElement({ api: "browser.storage.sync", value: (supported && browser.storage.sync!==undefined)});
   appendElement({ api: "browser.storage.local", value: (supported && browser.storage.local!==undefined)});
   appendElement({ api: "browser.storage.managed", value: (supported && browser.storage.managed!==undefined)});
   appendElement({ api: "browser.storage.onChanged", value: (supported && browser.storage.onChanged!==undefined)});
-  console.log('storage done')
 
   /**
    * tabs
    */
-  console.log('tabs start')
   supported = browser.tabs!==undefined
   appendHeading('tabs')
 
-  console.log('tabs properties')
   appendElement({ api: "browser.tabs.TAB_ID_NONE", value: (supported && browser.tabs.TAB_ID_NONE!==undefined)});
   
-  console.log('tabs functions')
   appendElement({ api: "browser.tabs.connect", value: (supported && browser.tabs.connect!==undefined)});
   appendElement({ api: "browser.tabs.create", value: (supported && browser.tabs.create!==undefined)});
   appendElement({ api: "browser.tabs.captureVisibleTab", value: (supported && browser.tabs.captureVisibleTab!==undefined)});
@@ -541,27 +473,21 @@ let tests = ()=>{
   appendElement({ api: "browser.tabs.onSelectionChanged", value: (supported && browser.tabs.onSelectionChanged!==undefined)});
   appendElement({ api: "browser.tabs.onUpdated", value: (supported && browser.tabs.onUpdated!==undefined)});
   appendElement({ api: "browser.tabs.onZoomChange", value: (supported && browser.tabs.onZoomChange!==undefined)});
-  console.log('tabs done')
 
   /**
    * topSites
    */
-  console.log('topSites start')
   supported = browser.topSites!==undefined
   appendHeading('topSites')
 
-  console.log('topSites functions')
   appendElement({ api: "browser.topSites.get", value: (supported && browser.topSites.get!==undefined)});
-  console.log('topSites done')
 
   /**
    * webNavigation
    */
-  console.log('webNavigation start')
   supported = browser.webNavigation!==undefined
   appendHeading('webNavigation')
 
-  console.log('tabs functions')
   appendElement({ api: "browser.webNavigation.getFrame", value: (supported && browser.webNavigation.getFrame!==undefined)});
   appendElement({ api: "browser.webNavigation.getAllFrames", value: (supported && browser.webNavigation.getAllFrames!==undefined)});
   appendElement({ api: "browser.webNavigation.onBeforeNavigate", value: (supported && browser.webNavigation.onBeforeNavigate!==undefined)});
@@ -573,19 +499,15 @@ let tests = ()=>{
   appendElement({ api: "browser.webNavigation.onReferenceFragmentUpdated", value: (supported && browser.webNavigation.onReferenceFragmentUpdated!==undefined)});
   appendElement({ api: "browser.webNavigation.onTabReplaced", value: (supported && browser.webNavigation.onTabReplaced!==undefined)});
   appendElement({ api: "browser.webNavigation.onHistoryStateUpdated", value: (supported && browser.webNavigation.onHistoryStateUpdated!==undefined)});
-  console.log('webNavigation done')
 
   /**
    * webRequest
    */
-  console.log('webRequest start')
   supported = browser.webRequest!==undefined
   appendHeading('webRequest')
 
-  console.log('webRequest properties')
   appendElement({ api: "browser.webRequest.MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES", value: (supported && browser.webRequest.MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES!==undefined)});
   
-  console.log('webRequest functions')
   appendElement({ api: "browser.webRequest.handlerBehaviorChanged", value: (supported && browser.webRequest.handlerBehaviorChanged!==undefined)});
   appendElement({ api: "browser.webRequest.onBeforeRequest", value: (supported && browser.webRequest.onBeforeRequest!==undefined)});
   appendElement({ api: "browser.webRequest.onBeforeSendHeaders", value: (supported && browser.webRequest.onBeforeSendHeaders!==undefined)});
@@ -596,20 +518,16 @@ let tests = ()=>{
   appendElement({ api: "browser.webRequest.onBeforeRedirect", value: (supported && browser.webRequest.onBeforeRedirect!==undefined)});
   appendElement({ api: "browser.webRequest.onCompleted", value: (supported && browser.webRequest.onCompleted!==undefined)});
   appendElement({ api: "browser.webRequest.onErrorOccurred", value: (supported && browser.webRequest.onErrorOccurred!==undefined)});
-  console.log('webRequest done')
 
   /**
    * windows
    */
-  console.log('windows start')
   supported = browser.windows!==undefined
   appendHeading('windows')
 
-  console.log('windows properties')
   appendElement({ api: "browser.windows.WINDOW_ID_NONE", value: (supported && browser.windows.WINDOW_ID_NONE!==undefined)});
   appendElement({ api: "browser.windows.WINDOW_ID_CURRENT", value: (supported && browser.windows.WINDOW_ID_CURRENT!==undefined)});
   
-  console.log('windows functions')
   appendElement({ api: "browser.windows.get", value: (supported && browser.windows.get!==undefined)});
   appendElement({ api: "browser.windows.getCurrent", value: (supported && browser.windows.getCurrent.get!==undefined)});
   appendElement({ api: "browser.windows.getLastFocused", value: (supported && browser.windows.getLastFocused!==undefined)});
@@ -620,7 +538,6 @@ let tests = ()=>{
   appendElement({ api: "browser.windows.onCreated", value: (supported && browser.windows.onCreated!==undefined)});
   appendElement({ api: "browser.windows.onRemoved", value: (supported && browser.windows.onRemoved!==undefined)});
   appendElement({ api: "browser.windows.onFocusChanged", value: (supported && browser.windows.onFocusChanged!==undefined)});
-  console.log('windows done')
 
   if(document.getElementsByClassName('callback').length < 1){
     callback({api: "browser.extension.lastError", supported: false})
