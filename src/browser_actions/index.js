@@ -2,6 +2,9 @@ var vendor = require('detect-browser')
 
 if(vendor.name === "chrome" || vendor.name === "opera"){
   browser = chrome
+  if(vendor.name === "opera"){
+    browser.sidebarAction = opr.sidebarAction
+  }
 }
 
 browser.tabs.query({active: true, currentWindow: true}, tabs => {

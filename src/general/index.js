@@ -2,6 +2,9 @@ var vendor = require('detect-browser')
 
 if(vendor.name === "chrome" || vendor.name === "opera"){
   browser = chrome
+  if(vendor.name === "opera"){
+    browser.sidebarAction = opr.sidebarAction
+  }
 }
 
 browser.tabs.query({active: true, currentWindow: true}, tabs => {
@@ -36,8 +39,7 @@ let appendElement = ({api, value})=> {
 let appendAsync = ({api, value})=>{
   let firstRow = document.getElementById(api.split('.')[1])
   if(firstRow.nextSibling.nextSibling.className==="callback"){
-    console.log('foo')
-    firstRow.nextSibling.nextElementSibling.removeChild()
+    table.removeChild(firstRow.nextSibling.nextElementSibling)
   }
   let tr = document.createElement('tr');
   tr.setAttribute('class', 'callback')
@@ -81,8 +83,10 @@ let tests = ()=>{
 
   function callback({api, supported}) {
     if(api==="browser.extension.lastError"){
+      browser.runtime.lastError
       appendAsync({api, value:(supported && browser.extension.lastError!==undefined)});
     } else if(api==="browser.runtime.lastError"){
+      browser.runtime.lastError
       appendAsync({api, value:(supported && browser.runtime.lastError!==undefined)});
     }
   }
@@ -529,17 +533,18 @@ let tests = ()=>{
   appendElement({ api: "browser.windows.WINDOW_ID_CURRENT", value: (supported && browser.windows.WINDOW_ID_CURRENT!==undefined)});
   
   appendElement({ api: "browser.windows.get", value: (supported && browser.windows.get!==undefined)});
-  appendElement({ api: "browser.windows.getCurrent", value: (supported && browser.windows.getCurrent.get!==undefined)});
+  appendElement({ api: "browser.windows.getCurrent", value: (supported && browser.windows.getCurrent!==undefined)});
   appendElement({ api: "browser.windows.getLastFocused", value: (supported && browser.windows.getLastFocused!==undefined)});
   appendElement({ api: "browser.windows.getAll", value: (supported && browser.windows.getAll!==undefined)});
   appendElement({ api: "browser.windows.create", value: (supported && browser.windows.create!==undefined)});
   appendElement({ api: "browser.windows.update", value: (supported && browser.windows.update!==undefined)});
   appendElement({ api: "browser.windows.remove", value: (supported && browser.windows.remove!==undefined)});
+  console.error('foo')
   appendElement({ api: "browser.windows.onCreated", value: (supported && browser.windows.onCreated!==undefined)});
   appendElement({ api: "browser.windows.onRemoved", value: (supported && browser.windows.onRemoved!==undefined)});
   appendElement({ api: "browser.windows.onFocusChanged", value: (supported && browser.windows.onFocusChanged!==undefined)});
 
-  if(document.getElementsByClassName('callback').length < 1){
+  if(document.getElementsByClassName('callback').length < 2){
     callback({api: "browser.extension.lastError", supported: false})
     callback({api: "browser.runtime.lastError", supported: false})
   }
