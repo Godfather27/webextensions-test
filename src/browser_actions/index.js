@@ -1,11 +1,4 @@
-var vendor = require('detect-browser')
-
-if(vendor.name === "chrome" || vendor.name === "opera"){
-  browser = chrome
-  if(vendor.name === "opera"){
-    browser.sidebarAction = opr.sidebarAction
-  }
-}
+browser = require('../polyfills/normalize-extensions');
 
 browser.tabs.query({active: true, currentWindow: true}, tabs => {
   if(browser.runtime.getURL("/index.html")!==tabs[0].url){

@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "alarms-test",
+  "name": "General Test",
   "version": "1.0",
-  "description": "Test all alarms APIs",
+  "description": "Tests all WebExtension APIs except BrowserActions",
   "author": "Sebastian Huber",
 
   "icons": {
