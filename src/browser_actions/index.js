@@ -1,16 +1,5 @@
+"use strict"
 browser = require('../polyfills/normalize-extensions');
-
-browser.tabs.query({active: true, currentWindow: true}, tabs => {
-  if(browser.runtime.getURL("/index.html")!==tabs[0].url){
-    browser.tabs.create({url: browser.runtime.getURL("./index.html")})
-  }
-})
-
-browser.tabs.query({active: true, currentWindow: true}, tabs => {
-  if(browser.runtime.getURL("/index.html")===tabs[0].url){
-    tests();
-  }
-})
 
 let table = document.getElementById('data');
 let appendElement = ({api, value})=> {
@@ -62,3 +51,19 @@ let tests = () =>{
   appendElement({ api: "browser.browserAction.onClicked", value: (supported && browser.browserAction.onClicked!==undefined)});
   console.log('browserAction done')
 }
+
+browser.tabs.query({active: true, currentWindow: true})
+  .then(tabs => {
+    if(browser.runtime.getURL("/index.html")!==tabs[0].url){
+      browser.tabs.create({url: browser.runtime.getURL("./index.html")})
+    }
+    console.log('it worked')
+  })
+
+browser.tabs.query({active: true, currentWindow: true})
+  .then(tabs => {
+    if(browser.runtime.getURL("/index.html")===tabs[0].url){
+      console.log('should start tests')
+      tests();
+    }
+  })

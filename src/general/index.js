@@ -1,13 +1,13 @@
 var vendor = require('detect-browser');
 browser = require('../polyfills/normalize-extensions');
 
-browser.tabs.query({active: true, currentWindow: true}, tabs => {
+browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
   if(browser.runtime.getURL("/index.html")!==tabs[0].url){
     browser.tabs.create({url: browser.runtime.getURL("./index.html")})
   }
 })
 
-browser.tabs.query({active: true, currentWindow: true}, tabs => {
+browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
   if(browser.runtime.getURL("/index.html")===tabs[0].url){
     tests();
   }
@@ -227,7 +227,7 @@ let tests = ()=>{
   supported = browser.extension!==undefined
   appendHeading('extension')
 
-  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.extension.lastError", supported}))
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}).then(()=>callback({api: "browser.extension.lastError", supported}))
   appendElement({ api: "browser.extension.inIncognitoContext", value: (supported && browser.extension.inIncognitoContext!==undefined)});
   
   appendElement({ api: "browser.extension.getURL", value: (supported && browser.extension.getURL!==undefined)});
@@ -363,7 +363,7 @@ let tests = ()=>{
   supported = browser.runtime!==undefined
   appendHeading('runtime')
 
-  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, callback.bind(this, {api: "browser.runtime.lastError", supported}))
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}).then(()=>callback({api: "browser.runtime.lastError", supported}))
   appendElement({ api: "browser.runtime.id", value: (supported && browser.runtime.id!==undefined)});
   
   appendElement({ api: "browser.runtime.getBackgroundPage", value: (supported && browser.runtime.getBackgroundPage!==undefined)});
@@ -533,7 +533,7 @@ let tests = ()=>{
   appendElement({ api: "browser.windows.create", value: (supported && browser.windows.create!==undefined)});
   appendElement({ api: "browser.windows.update", value: (supported && browser.windows.update!==undefined)});
   appendElement({ api: "browser.windows.remove", value: (supported && browser.windows.remove!==undefined)});
-  console.error('foo')
+  
   appendElement({ api: "browser.windows.onCreated", value: (supported && browser.windows.onCreated!==undefined)});
   appendElement({ api: "browser.windows.onRemoved", value: (supported && browser.windows.onRemoved!==undefined)});
   appendElement({ api: "browser.windows.onFocusChanged", value: (supported && browser.windows.onFocusChanged!==undefined)});
