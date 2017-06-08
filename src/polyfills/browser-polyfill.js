@@ -19,7 +19,7 @@
    * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
   "use strict";
 
-  if (typeof browser === "undefined") {
+  if (true) {
     // Wrapping the bulk of this polyfill in a one-time-use function is a minor
     // optimization for Firefox. Since Spidermonkey does not fully parse the
     // contents of a function until the first time it's called, and since it will
@@ -407,6 +407,7 @@
        */
       const wrapObject = (target, wrappers = {}, metadata = {}) => {
         let cache = Object.create(null);
+        console.log("cache", cache)
 
         let handlers = {
           has(target, prop) {
@@ -442,6 +443,7 @@
                 value = value.bind(target);
               }
             } else if (typeof value === "object" && value !== null && (hasOwnProperty(wrappers, prop) || hasOwnProperty(metadata, prop))) {
+              console.log(prop)
               // This is an object that we need to do some wrapping for the children
               // of. Create a sub-object wrapper for it with the appropriate child
               // metadata.
@@ -466,7 +468,7 @@
             try{
               cache[prop] = value;
             } catch(e) {
-              console.error(e, prop)
+              console.error(cache.tabs)
             }
             return value;
           },
@@ -488,8 +490,6 @@
             return Reflect.deleteProperty(cache, prop);
           }
         };
-
-        console.log(target)
 
         return new Proxy(target, handlers);
       };

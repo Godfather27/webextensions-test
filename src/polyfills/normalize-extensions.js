@@ -1,15 +1,13 @@
 let vendor = require('detect-browser')
 
+if(vendor.name === "chrome" || vendor.name === "opera"){
+  browser = chrome
+}
+
 if(vendor.name === "opera" && typeof opr !== "undefined"){
   chrome.sidebarAction = opr.sidebarAction
-  browser = undefined
 }
 
-if(vendor.name === "edge"){
-  chrome = browser
-  browser = undefined
-}
-
-browser = require('./browser-polyfill');
+// browser = require('./browser-polyfill');
 
 module.exports = browser;

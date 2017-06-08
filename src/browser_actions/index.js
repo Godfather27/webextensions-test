@@ -52,16 +52,20 @@ let tests = () =>{
   console.log('browserAction done')
 }
 
-browser.tabs.query({active: true, currentWindow: true})
-  .then(tabs => {
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
+    console.log('it doesnt like to be called twice')
+  })
+
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
     if(browser.runtime.getURL("/index.html")!==tabs[0].url){
       browser.tabs.create({url: browser.runtime.getURL("./index.html")})
     }
     console.log('it worked')
   })
 
-browser.tabs.query({active: true, currentWindow: true})
-  .then(tabs => {
+browser.tabs.query({active: true, currentWindow: true}, tabs => {
+    console.log('it worked again')    
+    console.log(browser.runtime.getURL("/index.html"))
     if(browser.runtime.getURL("/index.html")===tabs[0].url){
       console.log('should start tests')
       tests();

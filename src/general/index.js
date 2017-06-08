@@ -1,13 +1,13 @@
 var vendor = require('detect-browser');
 browser = require('../polyfills/normalize-extensions');
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
+browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
   if(browser.runtime.getURL("/index.html")!==tabs[0].url){
     browser.tabs.create({url: browser.runtime.getURL("./index.html")})
   }
 })
 
-browser.tabs.query({active: true, currentWindow: true}).then(tabs => {
+browser.tabs.query({active: true, currentWindow: true}, (tabs) => {
   if(browser.runtime.getURL("/index.html")===tabs[0].url){
     tests();
   }
@@ -123,6 +123,11 @@ let tests = ()=>{
   appendElement({ api: "browser.bookmarks.onImportBegan", value: (supported && browser.bookmarks.onImportBegan!==undefined)});
   appendElement({ api: "browser.bookmarks.onImportEnded", value: (supported && browser.bookmarks.onImportEnded!==undefined)});
 
+  // inspect a BookmarkTreeNode
+  browser.bookmarks.getTree((children)=>{
+    console.log(JSON.stringify(children[0]))
+  })
+
   /**
    * browsingData
    */
@@ -218,8 +223,8 @@ let tests = ()=>{
 
   /**
    * events
+   * events only hold Event Types
    */
-  console.log('events only hold Event Types')
 
   /**
    * extension
@@ -227,7 +232,7 @@ let tests = ()=>{
   supported = browser.extension!==undefined
   appendHeading('extension')
 
-  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}).then(()=>callback({api: "browser.extension.lastError", supported}))
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, ()=>callback({api: "browser.extension.lastError", supported}))
   appendElement({ api: "browser.extension.inIncognitoContext", value: (supported && browser.extension.inIncognitoContext!==undefined)});
   
   appendElement({ api: "browser.extension.getURL", value: (supported && browser.extension.getURL!==undefined)});
@@ -241,8 +246,8 @@ let tests = ()=>{
 
   /**
    * extensionTypes
+   * only common API Types
    */
-  console.log('only common API Types')
 
   /**
    * history
@@ -363,7 +368,7 @@ let tests = ()=>{
   supported = browser.runtime!==undefined
   appendHeading('runtime')
 
-  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}).then(()=>callback({api: "browser.runtime.lastError", supported}))
+  browser.pageAction.setIcon({"path": "icons/extension-icon-32.png", tabId: 90000}, ()=>callback({api: "browser.runtime.lastError", supported}))
   appendElement({ api: "browser.runtime.id", value: (supported && browser.runtime.id!==undefined)});
   
   appendElement({ api: "browser.runtime.getBackgroundPage", value: (supported && browser.runtime.getBackgroundPage!==undefined)});
